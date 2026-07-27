@@ -44,6 +44,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Dependencies & Environment
+# Dependencies & Environment Secrets
 node_modules/
 .env
+*.env
+.venv/
