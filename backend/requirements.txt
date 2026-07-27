@@ -1,0 +1,12 @@
+flask
+flask-cors
+firebase-admin
+mediapipe
+opencv-python
+numpy
+pyjwt
+bcrypt
+python-dotenv
+pymongo
+dnspython
+cloudinary

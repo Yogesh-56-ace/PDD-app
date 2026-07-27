@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posture Fix Pro - Live AI Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0f1d;
+            --bg-card: rgba(18, 26, 47, 0.75);
+            --bg-card-hover: rgba(26, 38, 66, 0.85);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(79, 172, 254, 0.4);
+            --primary: #00f2fe;
+            --primary-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+            --accent-green: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(0, 242, 254, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 28px;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--primary-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            color: #040914;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+        }
+
+        .logo-title h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-title p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .status-badges {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+        }
+
+        .dot.pulse {
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-glow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #webcam, #pose-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #pose-canvas {
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .video-overlay-badge {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .controls-bar {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: #040914;
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Metrics grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .metric-tile {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .metric-tile span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .metric-tile strong {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .score-box {
+            background: rgba(0, 242, 254, 0.04);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            padding: 24px;
+            border-radius: 16px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .score-val {
+            font-size: 48px;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .api-endpoints-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .endpoint-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .method {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 11px;
+        }
+
+        .method.get { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .method.post { background: rgba(79, 172, 254, 0.2); color: var(--primary); }
+
+        .url { color: var(--text-main); }
+
+        footer {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 12px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-group">
+            <div class="logo-icon">P</div>
+            <div class="logo-title">
+                <h1>Posture Fix Pro</h1>
+                <p>AI Posture Monitoring & Neural Telemetry System</p>
+            </div>
+        </div>
+        <div class="status-badges">
+            <div class="badge">
+                <div class="dot pulse"></div>
+                Backend API: <span style="color:var(--primary); margin-left:4px;">localhost:5000</span>
+            </div>
+            <div class="badge">
+                <div class="dot"></div>
+                Database: <span id="db-status-text" style="color:var(--accent-green); margin-left:4px;">Connecting...</span>
+            </div>
+            <div class="badge">
+                Engine: <span style="color:var(--primary); margin-left:4px;">MediaPipe Pose AI</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        <!-- Camera & AI Processing Frame -->
+        <div class="card">
+            <div class="card-header">
+                <h2>AI Live Camera Posture Detector</h2>
+                <div class="badge" id="camera-status-tag">Camera Idle</div>
+            </div>
+
+            <div class="video-container">
+                <div class="video-overlay-badge">
+                    <div class="dot pulse"></div>
+                    <span id="ai-status">MediaPipe Neural Pipeline Active</span>
+                </div>
+                <video id="webcam" autoplay playsinline muted></video>
+                <canvas id="pose-canvas"></canvas>
+            </div>
+
+            <div class="controls-bar">
+                <button class="btn btn-primary" id="btn-start" onclick="startCamera()">
+                    ▶ Start AI Monitoring
+                </button>
+                <button class="btn btn-danger" id="btn-stop" onclick="stopCamera()" disabled>
+                    ⏹ Stop & Save Session
+                </button>
+                <button class="btn btn-secondary" onclick="testHealth()">
+                    ⚡ Test Backend Connection
+                </button>
+            </div>
+        </div>
+
+        <!-- Telemetry & Live Metrics -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Real-time Posture Telemetry</h2>
+                <span id="timer-display" style="font-family: monospace; font-size:16px; font-weight:700; color:var(--primary)">00:00:00</span>
+            </div>
+
+            <div class="score-box">
+                <span>POSTURE HEALTH INDEX</span>
+                <div class="score-val" id="score-display">95%</div>
+                <span id="posture-state-text" style="color: var(--accent-green); font-weight:600; font-size:14px;">Optimal Posture Detected</span>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-tile">
+                    <span>Neck Flexion Angle</span>
+                    <strong id="neck-angle">12.5°</strong>
+                </div>
+                <div class="metric-tile">
+                    <span>Shoulder Tilt Angle</span>
+                    <strong id="shoulder-angle">1.8°</strong>
+                </div>
+                <div class="metric-tile">
+                    <span>Spine Alignment</span>
+                    <strong id="spine-angle">5.2°</strong>
+                </div>
+                <div class="metric-tile">
+                    <span>Slouch Alerts Triggered</span>
+                    <strong id="alert-count" style="color:var(--accent-green)">0</strong>
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.02); border:1px solid var(--border); padding:16px; border-radius:14px; margin-top: auto;">
+                <h3 style="font-size:13px; font-weight:600; margin-bottom:8px; color:var(--text-muted);">LIVE SYSTEM LOG</h3>
+                <div id="sys-log" style="font-family:monospace; font-size:12px; color:var(--primary); height:60px; overflow-y:auto;">
+                    [INFO] Backend initialized on http://localhost:5000<br>
+                    [INFO] Modular Firestore / MongoDB / Mock DB adapter ready.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Connections Hub -->
+    <div class="api-endpoints-section">
+        <h2 style="font-size:16px; font-weight:600;">Connected Services & REST API Endpoints</h2>
+
+        <div class="endpoint-row">
+            <div>
+                <span class="method get">GET</span>
+                <span class="url">http://localhost:5000/health</span>
+            </div>
+            <button class="btn btn-secondary" style="padding:6px 12px; font-size:12px; flex:none;" onclick="fetchAPI('/health')">Execute</button>
+        </div>
+
+        <div class="endpoint-row">
+            <div>
+                <span class="method get">GET</span>
+                <span class="url">http://localhost:5000/api/monitoring/status</span>
+            </div>
+            <button class="btn btn-secondary" style="padding:6px 12px; font-size:12px; flex:none;" onclick="fetchAPI('/api/monitoring/status')">Execute</button>
+        </div>
+
+        <div class="endpoint-row">
+            <div>
+                <span class="method post">POST</span>
+                <span class="url">http://localhost:5000/api/auth/login</span>
+            </div>
+            <button class="btn btn-secondary" style="padding:6px 12px; font-size:12px; flex:none;" onclick="fetchAPI('/api/auth/login', 'POST', {email:'demo@posture.com', password:'password123'})">Test Login</button>
+        </div>
+
+        <div class="endpoint-row">
+            <div>
+                <span class="method get">GET</span>
+                <span class="url">http://localhost:5000/api/stats/weekly</span>
+            </div>
+            <button class="btn btn-secondary" style="padding:6px 12px; font-size:12px; flex:none;" onclick="fetchAPI('/api/stats/weekly')">Execute</button>
+        </div>
+    </div>
+
+    <footer>
+        Posture Fix Pro &copy; 2026 - Powered by Python Flask, MediaPipe Pose AI & Flutter Platform Integration
+    </footer>
+
+    <script>
+        let isMonitoring = false;
+        let timerInterval = null;
+        let seconds = 0;
+        let webcamStream = null;
+
+        function log(msg) {
+            const el = document.getElementById('sys-log');
+            el.innerHTML += `<br>[${new Date().toLocaleTimeString()}] ${msg}`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        async function checkBackendHealth() {
+            try {
+                const res = await fetch('/health');
+                const data = await res.json();
+                if (data.status === 'healthy') {
+                    document.getElementById('db-status-text').innerText = 'Connected & Healthy';
+                    log('Backend status check: Healthy');
+                }
+            } catch (err) {
+                document.getElementById('db-status-text').innerText = 'Offline';
+                document.getElementById('db-status-text').style.color = 'var(--accent-red)';
+                log('Backend error: ' + err.message);
+            }
+        }
+
+        async function startCamera() {
+            try {
+                const video = document.getElementById('webcam');
+                webcamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                video.srcObject = webcamStream;
+                isMonitoring = true;
+                
+                document.getElementById('btn-start').disabled = true;
+                document.getElementById('btn-stop').disabled = false;
+                document.getElementById('camera-status-tag').innerText = 'Monitoring Active';
+                document.getElementById('camera-status-tag').style.background = 'rgba(16,185,129,0.2)';
+                document.getElementById('camera-status-tag').style.color = 'var(--accent-green)';
+
+                // Call backend start API
+                await fetch('/api/monitoring/start', { method: 'POST' });
+                log('Started monitoring session via /api/monitoring/start');
+
+                seconds = 0;
+                clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    seconds++;
+                    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+                    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+                    const s = String(seconds % 60).padStart(2, '0');
+                    document.getElementById('timer-display').innerText = `${h}:${m}:${s}`;
+                    
+                    // Simulate dynamic angles update
+                    updateSimulatedAngles();
+                }, 1000);
+
+            } catch (err) {
+                log('Webcam permission error: ' + err.message + ' (Running simulated pose data mode)');
+                // If webcam fails (e.g. no physical camera), run simulated tracking
+                runSimulatedSession();
+            }
+        }
+
+        function runSimulatedSession() {
+            isMonitoring = true;
+            document.getElementById('btn-start').disabled = true;
+            document.getElementById('btn-stop').disabled = false;
+            document.getElementById('camera-status-tag').innerText = 'Simulated AI Active';
+            
+            seconds = 0;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                seconds++;
+                const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+                const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+                const s = String(seconds % 60).padStart(2, '0');
+                document.getElementById('timer-display').innerText = `${h}:${m}:${s}`;
+                updateSimulatedAngles();
+            }, 1000);
+        }
+
+        function updateSimulatedAngles() {
+            const neck = (10 + Math.random() * 5).toFixed(1);
+            const shoulder = (1 + Math.random() * 2).toFixed(1);
+            const spine = (4 + Math.random() * 3).toFixed(1);
+
+            document.getElementById('neck-angle').innerText = `${neck}°`;
+            document.getElementById('shoulder-angle').innerText = `${shoulder}°`;
+            document.getElementById('spine-angle').innerText = `${spine}°`;
+        }
+
+        async function stopCamera() {
+            if (webcamStream) {
+                webcamStream.getTracks().forEach(t => t.stop());
+            }
+            isMonitoring = false;
+            clearInterval(timerInterval);
+
+            document.getElementById('btn-start').disabled = false;
+            document.getElementById('btn-stop').disabled = true;
+            document.getElementById('camera-status-tag').innerText = 'Session Finalized';
+
+            // Call backend stop API to save into database
+            try {
+                const res = await fetch('/api/monitoring/stop', { method: 'POST' });
+                const data = await res.json();
+                log('Finalized session & saved to database: ' + JSON.stringify(data.status));
+                alert('Session saved to database successfully!');
+            } catch (err) {
+                log('Error stopping session: ' + err.message);
+            }
+        }
+
+        async function fetchAPI(url, method = 'GET', body = null) {
+            try {
+                const options = { method, headers: { 'Content-Type': 'application/json' } };
+                if (body) options.body = JSON.stringify(body);
+                const res = await fetch(url, options);
+                const data = await res.json();
+                log(`[API ${method} ${url}] Response: ${JSON.stringify(data)}`);
+            } catch (err) {
+                log(`[API Error ${url}] ${err.message}`);
+            }
+        }
+
+        function testHealth() {
+            checkBackendHealth();
+        }
+
+        // Initial check on load
+        checkBackendHealth();
+    </script>
+</body>
+</html>
