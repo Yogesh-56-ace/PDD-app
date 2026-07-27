@@ -43,26 +43,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r automation/requirements.txt
 
-      # Stage 3: Build Flutter Web Project
-      - name: Stage 3 - Build Flutter Web Project
+      # Stage 3: Build Flutter Web Application
+      - name: Stage 3 - Build Flutter Web Application
         run: |
-          if [ -f "pubspec.yaml" ]; then
-            echo "Building root Flutter Web project..."
-            flutter pub get
-            flutter build web --release --base-href "/posturefixpro-app/"
-          elif [ -f "website/pubspec.yaml" ]; then
-            echo "Building website/ Flutter Web project..."
-            cd website
-            flutter pub get
-            flutter build web --release --base-href "/posturefixpro-app/"
-            cd ..
-            mkdir -p build
-            cp -r website/build/web build/web
-          fi
-          echo "Verifying build/web output..."
+          echo "Building Flutter Web Application..."
+          flutter pub get
+          flutter build web --release --base-href "/posturefixpro-app/"
+          echo "Verifying build/web output directory..."
           test -d build/web
           test -f build/web/index.html
-          echo "Flutter Web build succeeded."
+          echo "Flutter Web build completed successfully."
 
       # Stage 4: Static Analysis
       - name: Stage 4 - Static Analysis & Syntax Verification
