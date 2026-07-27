@@ -24,8 +24,15 @@ jobs:
       - name: Stage 1 - Repository Checkout
         uses: actions/checkout@v4
 
-      # Stage 2: Dependency Installation
-      - name: Stage 2 - Setup Python 3.10 & Install Dependencies
+      # Setup Flutter SDK Engine
+      - name: Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      # Stage 2: Setup Python & Install Dependencies
+      - name: Stage 2 - Setup Python 3.10 & Install Automation Dependencies
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
@@ -36,18 +43,31 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r automation/requirements.txt
 
-      # Stage 3: Build Application
-      - name: Stage 3 - Build Application Assets
+      # Stage 3: Build Flutter Web Project
+      - name: Stage 3 - Build Flutter Web Project
         run: |
-          echo "Verifying static web bundle in android/app/src/main/assets/public..."
-          test -f android/app/src/main/assets/public/index.html
-          echo "Build verification successful."
+          if [ -f "pubspec.yaml" ]; then
+            echo "Building root Flutter Web project..."
+            flutter pub get
+            flutter build web --release --base-href "/posturefixpro-app/"
+          elif [ -f "website/pubspec.yaml" ]; then
+            echo "Building website/ Flutter Web project..."
+            cd website
+            flutter pub get
+            flutter build web --release --base-href "/posturefixpro-app/"
+            cd ..
+            mkdir -p build
+            cp -r website/build/web build/web
+          fi
+          echo "Verifying build/web output..."
+          test -d build/web
+          test -f build/web/index.html
+          echo "Flutter Web build succeeded."
 
       # Stage 4: Static Analysis
       - name: Stage 4 - Static Analysis & Syntax Verification
         run: |
-          python -c "from html.parser import HTMLParser; HTMLParser().feed(open('android/app/src/main/assets/public/index.html', encoding='utf-8').read())"
-          node --check android/app/src/main/assets/public/js/app.js
+          python -c "from html.parser import HTMLParser; HTMLParser().feed(open('build/web/index.html', encoding='utf-8').read())"
           echo "Static analysis passed cleanly."
 
       # Stage 5: Deploy to GitHub Pages
@@ -56,7 +76,7 @@ jobs:
         if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./android/app/src/main/assets/public
+          publish_dir: ./build/web
           force_orphan: true
 
       # Stage 6: Wait for Deployment
@@ -78,7 +98,7 @@ jobs:
           fi
           echo "Live deployment verified successfully at $BASE_URL."
 
-      # Stage 8 & 9 & 10: Run Selenium E2E Tests & Report Generation
+      # Stage 8-10: Run Selenium E2E Tests & Report Generation
       - name: Stage 8-10 - Execute Selenium E2E Suite & Generate Reports
         run: |
           python automation/tests/test_runner.py
@@ -98,7 +118,7 @@ jobs:
             Test Results/Summary/*.md
           retention-days: 30
 
-      # Stage 12 & 13: Publish Summary & Store Historical Results
+      # Stage 12-13: Publish Summary & Store Historical Results
       - name: Stage 12-13 - Publish GitHub Step Summary & Historical Evidence
         if: always()
         run: |
