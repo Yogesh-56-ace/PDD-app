@@ -1,0 +1,107 @@
+name: CI/CD GitHub Pages Deployment + Live Selenium E2E Testing
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy-and-test:
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: https://yogesh-56-ace.github.io/posturefixpro-app/
+      HEADLESS: "true"
+
+    steps:
+      # Stage 1: Repository Checkout
+      - name: Stage 1 - Repository Checkout
+        uses: actions/checkout@v4
+
+      # Stage 2: Dependency Installation
+      - name: Stage 2 - Setup Python 3.10 & Install Dependencies
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Automation Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r automation/requirements.txt
+
+      # Stage 3: Build Application
+      - name: Stage 3 - Build Application Assets
+        run: |
+          echo "Verifying static web bundle in android/app/src/main/assets/public..."
+          test -f android/app/src/main/assets/public/index.html
+          echo "Build verification successful."
+
+      # Stage 4: Static Analysis
+      - name: Stage 4 - Static Analysis & Syntax Verification
+        run: |
+          python -c "from html.parser import HTMLParser; HTMLParser().feed(open('android/app/src/main/assets/public/index.html', encoding='utf-8').read())"
+          node --check android/app/src/main/assets/public/js/app.js
+          echo "Static analysis passed cleanly."
+
+      # Stage 5: Deploy to GitHub Pages
+      - name: Stage 5 - Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./android/app/src/main/assets/public
+          force_orphan: true
+
+      # Stage 6: Wait for Deployment
+      - name: Stage 6 - Wait for GitHub Pages Deployment
+        run: |
+          echo "Waiting 15 seconds for GitHub Pages propagation..."
+          sleep 15
+
+      # Stage 7: Deployment Verification
+      - name: Stage 7 - Deployment Verification
+        run: |
+          echo "Checking live URL status code for $BASE_URL..."
+          STATUS_CODE=$(curl -o /dev/null -s -w "%{http_code}" "$BASE_URL" || echo "000")
+          echo "HTTP Status Received: $STATUS_CODE"
+          if [ "$STATUS_CODE" -ne 200 ]; then
+            echo "WARNING: GitHub Pages propagation delay (Status: $STATUS_CODE). Retrying in 10s..."
+            sleep 10
+            curl -f -s "$BASE_URL" > /dev/null
+          fi
+          echo "Live deployment verified successfully at $BASE_URL."
+
+      # Stage 8 & 9 & 10: Run Selenium E2E Tests & Report Generation
+      - name: Stage 8-10 - Execute Selenium E2E Suite & Generate Reports
+        run: |
+          python automation/tests/test_runner.py
+
+      # Stage 11: Upload Artifacts (Retention: 30 Days)
+      - name: Stage 11 - Upload Test Evidence Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: PostureFixPro-E2E-Evidence-Reports
+          path: |
+            Test Results/Excel/*.xlsx
+            Test Results/HTML/*.html
+            Test Results/Screenshots/*.png
+            Test Results/Logs/*.log
+            Test Results/JSON/*.json
+            Test Results/Summary/*.md
+          retention-days: 30
+
+      # Stage 12 & 13: Publish Summary & Store Historical Results
+      - name: Stage 12-13 - Publish GitHub Step Summary & Historical Evidence
+        if: always()
+        run: |
+          if [ -f "Test Results/Summary/summary.md" ]; then
+            cat "Test Results/Summary/summary.md" >> $GITHUB_STEP_SUMMARY
+          fi
