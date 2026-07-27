@@ -45,6 +45,7 @@ jobs:
 
       # Stage 3: Build Flutter Web Application
       - name: Stage 3 - Build Flutter Web Application
+        working-directory: frontend
         run: |
           echo "Building Flutter Web Application..."
           flutter pub get
@@ -57,7 +58,7 @@ jobs:
       # Stage 4: Static Analysis
       - name: Stage 4 - Static Analysis & Syntax Verification
         run: |
-          python -c "from html.parser import HTMLParser; HTMLParser().feed(open('build/web/index.html', encoding='utf-8').read())"
+          python -c "from html.parser import HTMLParser; HTMLParser().feed(open('frontend/build/web/index.html', encoding='utf-8').read())"
           echo "Static analysis passed cleanly."
 
       # Stage 5: Deploy to GitHub Pages
@@ -66,7 +67,7 @@ jobs:
         if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/web
+          publish_dir: ./frontend/build/web
           force_orphan: true
 
       # Stage 6: Wait for Deployment

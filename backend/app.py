@@ -52,7 +52,7 @@ def create_app():
     @app.route('/mobile', methods=['GET'])
     @app.route('/mobile/<path:path>', methods=['GET'])
     def serve_mobile_showcase(path=''):
-        showcase_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'android', 'app', 'src', 'main', 'assets', 'public'))
+        showcase_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'android', 'app', 'src', 'main', 'assets', 'public'))
         if path != "" and os.path.exists(os.path.join(showcase_dir, path)):
             from flask import send_from_directory
             return send_from_directory(showcase_dir, path)
@@ -64,7 +64,7 @@ def create_app():
     @app.route('/app', methods=['GET'])
     @app.route('/app/<path:path>', methods=['GET'])
     def serve_flutter_app(path=''):
-        flutter_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'build', 'web'))
+        flutter_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'build', 'web'))
         if path != "" and os.path.exists(os.path.join(flutter_dir, path)):
             from flask import send_from_directory
             return send_from_directory(flutter_dir, path)
