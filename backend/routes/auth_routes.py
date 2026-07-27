@@ -5,31 +5,35 @@ from database.mongodb import db
 from models.settings_model import SettingsModel
 from services.auth_service import AuthService
 
+import re
+
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
     """Registers a new user directly in PyMongo MongoDB Atlas posture_ai.users collection."""
     data = request.get_json() or {}
-    print(f"\n[REGISTRATION REQUEST] Incoming request payload: name={data.get('name')}, email={data.get('email')}, age={data.get('age')}, gender={data.get('gender')}")
+    print(f"\n[REGISTRATION REQUEST] Incoming payload: name={data.get('name')}, email={data.get('email')}")
     
     name = data.get('name')
-    email = data.get('email')
+    raw_email = data.get('email', '')
     password = data.get('password')
     age = data.get('age')
     gender = data.get('gender')
 
-    if not name or not email or not password:
+    if not name or not raw_email or not password:
         print("[REGISTRATION WARN] Missing mandatory registration credentials!")
         return jsonify({'message': 'Missing mandatory registration credentials!', 'error': 'Missing name, email, or password'}), 400
 
+    clean_email = str(raw_email).strip().lower()
+
     try:
-        # 1. Check if user already exists using db.users.find_one()
-        print(f"[REGISTRATION LOG] Executing db.users.find_one for email={email}...")
-        existing_user = db.users.find_one({'email': email})
+        # 1. Case-insensitive check if user already exists in db.users
+        print(f"[REGISTRATION LOG] Checking db.users for existing email={clean_email}...")
+        existing_user = db.users.find_one({'email': {'$regex': f'^{re.escape(clean_email)}$', '$options': 'i'}})
 
         if existing_user:
-            print(f"[REGISTRATION WARN] Account already exists for email: {email}")
+            print(f"[REGISTRATION WARN] Account already exists for email: {clean_email}")
             return jsonify({'message': 'A user account with this email already exists!', 'error': 'User account already exists'}), 409
 
         # 2. Validate age if present
@@ -58,7 +62,7 @@ def register():
             '_id': user_id,
             'user_id': user_id,
             'name': name,
-            'email': email,
+            'email': clean_email,
             'password_hash': hashed_password,
             'age': validated_age,
             'gender': validated_gender,
@@ -66,20 +70,18 @@ def register():
             'onboarding_completed': False
         }
 
-        # 6. Logging before and after db.users.insert_one() call
-        print(f"[REGISTRATION BEFORE INSERT] Executing db.users.insert_one() for _id={user_id}, email={email}...")
+        # 6. Insert into db.users
+        print(f"[REGISTRATION INSERT] Saving user document _id={user_id}, email={clean_email}...")
         insert_result = db.users.insert_one(user_doc)
-        print(f"[REGISTRATION AFTER INSERT] db.users.insert_one() finished! acknowledged={insert_result.acknowledged}, inserted_id={insert_result.inserted_id}")
+        print(f"[REGISTRATION INSERT OK] acknowledged={insert_result.acknowledged}, inserted_id={insert_result.inserted_id}")
 
-        # 7. Logging before and after db.settings.insert_one() call
+        # 7. Create default settings
         default_settings = SettingsModel(user_id=user_id).to_dict()
         default_settings['_id'] = user_id
-        print(f"[SETTINGS BEFORE INSERT] Executing db.settings.insert_one() for _id={user_id}...")
-        settings_insert = db.settings.insert_one(default_settings)
-        print(f"[SETTINGS AFTER INSERT] db.settings.insert_one() finished! acknowledged={settings_insert.acknowledged}, inserted_id={settings_insert.inserted_id}")
+        db.settings.insert_one(default_settings)
 
         # 8. Issue JWT token
-        token = AuthService.generate_token(user_id, email)
+        token = AuthService.generate_token(user_id, clean_email)
 
         return jsonify({
             'message': 'Registration successful!',
@@ -87,7 +89,7 @@ def register():
             'user': {
                 'user_id': user_id,
                 'name': name,
-                'email': email,
+                'email': clean_email,
                 'age': validated_age,
                 'gender': validated_gender,
                 'profile_image': None,
@@ -96,7 +98,7 @@ def register():
         }), 201
 
     except Exception as e:
-        print(f"[REGISTRATION FAILURE EXCEPTION] Full Exception in Flask Console: {e}", file=sys.stderr)
+        print(f"[REGISTRATION ERROR] Exception: {e}", file=sys.stderr)
         import traceback
         traceback.print_exc()
         return jsonify({'message': f'MongoDB Atlas Registration Error: {str(e)}', 'error': str(e)}), 500
@@ -104,33 +106,37 @@ def register():
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    """Authenticates returning users directly using db.users.find_one()."""
+    """Authenticates returning users directly using case-insensitive email query and Bcrypt audit."""
     data = request.get_json() or {}
-    email = data.get('email')
+    raw_email = data.get('email', '')
     password = data.get('password')
 
-    if not email or not password:
+    if not raw_email or not password:
         return jsonify({'message': 'Missing email or password credentials!', 'error': 'Missing credentials'}), 400
 
+    clean_email = str(raw_email).strip().lower()
+
     try:
-        # Direct PyMongo find_one() query in posture_ai.users
-        print(f"[LOGIN LOG] Executing db.users.find_one for email={email}...")
-        user_doc = db.users.find_one({'email': email})
+        # Case-insensitive email query in posture_ai.users
+        print(f"[LOGIN LOG] Searching db.users for email={clean_email}...")
+        user_doc = db.users.find_one({'email': {'$regex': f'^{re.escape(clean_email)}$', '$options': 'i'}})
 
         if not user_doc:
-            print(f"[LOGIN WARN] User not found for email: {email}")
+            print(f"[LOGIN WARN] User not found for email: {clean_email}")
             return jsonify({'message': 'Invalid login credentials!', 'error': 'User not found'}), 401
 
         # Audit password with Bcrypt
-        is_password_valid = AuthService.check_password(password, user_doc.get('password_hash', ''))
+        stored_hash = user_doc.get('password_hash', '')
+        is_password_valid = AuthService.check_password(password, stored_hash)
         if not is_password_valid:
-            print(f"[LOGIN WARN] Invalid password for email: {email}")
+            print(f"[LOGIN WARN] Invalid password for email: {clean_email}")
             return jsonify({'message': 'Invalid login credentials!', 'error': 'Incorrect password'}), 401
 
         user_id = user_doc.get('user_id', str(user_doc.get('_id', '')))
+        user_email = user_doc.get('email', clean_email)
         
         # Issue signed JWT token
-        token = AuthService.generate_token(user_id, email)
+        token = AuthService.generate_token(user_id, user_email)
 
         return jsonify({
             'message': 'Authentication successful!',
@@ -138,7 +144,7 @@ def login():
             'user': {
                 'user_id': user_id,
                 'name': user_doc.get('name'),
-                'email': email,
+                'email': user_email,
                 'age': user_doc.get('age'),
                 'gender': user_doc.get('gender'),
                 'profile_image': user_doc.get('profile_image'),
@@ -147,7 +153,7 @@ def login():
         }), 200
 
     except Exception as e:
-        print(f"[LOGIN EXCEPTION] Full Exception in Flask Console: {e}", file=sys.stderr)
+        print(f"[LOGIN ERROR] Exception: {e}", file=sys.stderr)
         import traceback
         traceback.print_exc()
         return jsonify({'message': f'MongoDB Atlas Login Error: {str(e)}', 'error': str(e)}), 500

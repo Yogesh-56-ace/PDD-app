@@ -29,7 +29,7 @@ def create_app():
     app.config.from_object(Config)
 
     # 1. Enable Cross-Origin Resource Sharing (CORS)
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
     # 2. Register Blueprints
     app.register_blueprint(auth_bp, url_prefix='/api/auth')

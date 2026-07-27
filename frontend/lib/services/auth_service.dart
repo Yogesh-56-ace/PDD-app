@@ -25,8 +25,9 @@ class AuthService {
 
   static Future<Map<String, dynamic>> login(String email, String password) async {
     try {
+      final cleanEmail = email.trim().toLowerCase();
       final res = await ApiService.post(ApiConstants.login, {
-        'email': email,
+        'email': cleanEmail,
         'password': password,
       });
 
@@ -56,9 +57,10 @@ class AuthService {
     String? gender,
   }) async {
     try {
+      final cleanEmail = email.trim().toLowerCase();
       final res = await ApiService.post(ApiConstants.register, {
         'name': username,
-        'email': email,
+        'email': cleanEmail,
         'password': password,
         'age': age,
         'gender': gender,
