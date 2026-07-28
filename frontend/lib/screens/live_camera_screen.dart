@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
+import '../widgets/base_layout.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/status_badge.dart';
@@ -92,12 +93,10 @@ class _LiveCameraScreenState extends State<LiveCameraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgBody,
-      appBar: const CustomAppBar(title: 'AI Scan'),
-      body: SafeArea(
-        child: Column(
-          children: [
+    return BaseLayout(
+      title: 'AI Scan',
+      body: Column(
+        children: [
             // Status Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),

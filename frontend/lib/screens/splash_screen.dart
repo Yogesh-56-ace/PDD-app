@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/base_layout.dart';
 import '../widgets/custom_button.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
@@ -58,11 +59,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BaseLayout(
       backgroundColor: AppColors.bgApp,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+      safeAreaTop: true,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

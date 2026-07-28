@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/base_layout.dart';
 import '../widgets/custom_button.dart';
 import 'home_screen.dart';
 
@@ -44,11 +45,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BaseLayout(
       backgroundColor: AppColors.bgApp,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+      safeAreaTop: true,
+      body: Padding(
+        padding: const EdgeInsets.all(24),
           child: Column(
             children: [
               Align(

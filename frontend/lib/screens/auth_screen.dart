@@ -6,6 +6,7 @@ import '../constants/app_text_styles.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_input.dart';
+import '../widgets/base_layout.dart';
 import 'home_screen.dart';
 import 'onboarding_screen.dart';
 
@@ -59,11 +60,11 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
 
-    return Scaffold(
+    return BaseLayout(
       backgroundColor: AppColors.bgApp,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+      safeAreaTop: true,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [

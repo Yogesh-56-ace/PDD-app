@@ -6,6 +6,7 @@ import '../constants/app_text_styles.dart';
 import '../providers/posture_provider.dart';
 import '../widgets/status_badge.dart';
 
+import '../widgets/base_layout.dart';
 import '../widgets/custom_app_bar.dart';
 
 class MonitoringScreen extends StatefulWidget {
@@ -28,21 +29,17 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
   Widget build(BuildContext context) {
     final posture = Provider.of<PostureProvider>(context);
 
-    return Scaffold(
+    return BaseLayout(
+      title: 'AI Monitoring',
       backgroundColor: Colors.black,
-      appBar: CustomAppBar(
-        title: 'AI Monitoring',
-        backgroundColor: Colors.black,
-        onBack: () {
-          posture.stopMonitoring();
-          if (Navigator.canPop(context)) {
-            Navigator.pop(context);
-          }
-        },
-      ),
-      body: SafeArea(
-        child: Stack(
-          children: [
+      onBack: () {
+        posture.stopMonitoring();
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+      },
+      body: Stack(
+        children: [
             // Simulated Camera Feed & Skeletal Canvas
             Center(
               child: Container(

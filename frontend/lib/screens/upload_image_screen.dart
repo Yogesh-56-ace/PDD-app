@@ -115,39 +115,35 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgBody,
-      appBar: CustomAppBar(
-        title: 'Image Upload',
-        showBackButton: widget.showBackButton,
-        onBack: widget.onBack,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Page Title
-              const Text(
-                'Image Upload',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textMain,
-                  letterSpacing: -0.5,
-                ),
+    return BaseLayout(
+      title: 'Image Upload',
+      showBackButton: widget.showBackButton,
+      onBack: widget.onBack,
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Subtitle
+            const Text(
+              'Upload a posture image and let AI analyze your posture.',
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.textMuted,
+                height: 1.4,
               ),
-              const SizedBox(height: 6),
-              // Subtitle
+            ),
+            const SizedBox(height: 24),
+
+            // Upload Options (when no image selected)
+            if (_selectedImage == null) ...[
               const Text(
-                'Upload a posture image and let AI analyze your posture.',
+                'Upload Options',
                 style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textMuted,
-                  height: 1.4,
-                ),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textMain,
               ),
               const SizedBox(height: 24),
 

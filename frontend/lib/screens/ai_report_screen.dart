@@ -3,6 +3,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
 import '../models/ai_report_model.dart';
+import '../widgets/base_layout.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/posture_gauge.dart';
@@ -10,8 +11,9 @@ import '../widgets/status_badge.dart';
 
 class AiReportScreen extends StatefulWidget {
   final AiReportModel? report;
+  final bool embedInScaffold;
 
-  const AiReportScreen({super.key, this.report});
+  const AiReportScreen({super.key, this.report, this.embedInScaffold = true});
 
   @override
   State<AiReportScreen> createState() => _AiReportScreenState();
@@ -199,16 +201,12 @@ class _AiReportScreenState extends State<AiReportScreen> {
       final r = widget.report;
       final int score = r?.overallScore ?? 88;
 
-      return Scaffold(
-        backgroundColor: AppColors.bgBody,
-        appBar: const CustomAppBar(title: 'AI Posture Report'),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      final reportBody = SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
                 // 1. Overall Posture Score
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -461,8 +459,15 @@ class _AiReportScreenState extends State<AiReportScreen> {
                 const SizedBox(height: 24),
               ],
             ),
-          ),
-        ),
+      );
+
+      if (!widget.embedInScaffold) {
+        return reportBody;
+      }
+
+      return BaseLayout(
+        title: 'AI Posture Report',
+        body: reportBody,
       );
     } catch (e, stackTrace) {
       debugPrint('❌ Exception inside AiReportScreen build: $e\n$stackTrace');

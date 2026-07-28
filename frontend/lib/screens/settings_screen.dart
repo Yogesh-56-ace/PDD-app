@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
 import '../providers/theme_provider.dart';
+import '../widgets/base_layout.dart';
 import '../widgets/custom_app_bar.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -125,8 +126,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
 
-    return Scaffold(
-      appBar: const CustomAppBar(title: 'App Settings'),
+    return BaseLayout(
+      title: 'App Settings',
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(

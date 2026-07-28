@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
+import '../widgets/base_layout.dart';
 
 class AlertsScreen extends StatelessWidget {
   const AlertsScreen({super.key});
@@ -29,13 +30,12 @@ class AlertsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return BaseLayout(
+      title: 'Alerts & Notifications',
       padding: const EdgeInsets.all(20),
-      child: Column(
+      body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Alerts & Notifications', style: AppTextStyles.h2),
-          const SizedBox(height: 4),
           Text('Real-time feedback & posture breakdown log', style: AppTextStyles.bodyMuted),
           const SizedBox(height: 20),
           Expanded(

@@ -428,9 +428,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Disable outer top SafeArea when the current tab manages its own CustomAppBar (e.g. UploadImageScreen)
+    final bool tabHasAppBar = _currentBottomNavIndex == 1;
+
     return Scaffold(
       backgroundColor: AppColors.bgBody,
-      body: SafeArea(child: _buildBody()),
+      body: SafeArea(
+        top: !tabHasAppBar,
+        bottom: true,
+        child: _buildBody(),
+      ),
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _currentBottomNavIndex,
         onTap: _onBottomNavTapped,
