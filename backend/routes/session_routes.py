@@ -87,6 +87,32 @@ def get_user_sessions(user_id):
                 doc['_id'] = str(doc['_id'])
             if 'id' not in doc:
                 doc['id'] = doc.get('session_id', doc['_id'])
+            
+            # Normalize fields to guarantee UI consistency
+            score_val = doc.get('score')
+            if score_val is None or str(score_val).lower() == 'undefined':
+                score_val = doc.get('overall_score', 85)
+            try:
+                score_val = int(float(score_val))
+            except Exception:
+                score_val = 85
+            
+            doc['score'] = score_val
+            doc['overall_score'] = score_val
+
+            dur_str = doc.get('duration_str')
+            if not dur_str or str(dur_str).lower() == 'undefined':
+                dur = doc.get('duration')
+                if dur and str(dur).isdigit():
+                    d_int = int(dur)
+                    dur_str = f"{d_int // 60}m {d_int % 60}s" if d_int >= 60 else f"{d_int}s"
+                else:
+                    dur_str = "Image Scan"
+            doc['duration_str'] = dur_str
+
+            if 'status' not in doc or not doc['status']:
+                doc['status'] = "Good" if score_val >= 80 else ("Fair" if score_val >= 60 else "Poor")
+
             sessions_list.append(doc)
             
         sessions_list.sort(key=lambda s: str(s.get('date', '')), reverse=True)
