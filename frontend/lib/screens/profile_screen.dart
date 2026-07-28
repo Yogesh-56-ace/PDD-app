@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
 import '../providers/auth_provider.dart';
@@ -8,8 +11,76 @@ import '../widgets/custom_button.dart';
 import 'auth_screen.dart';
 import 'settings_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final ImagePicker _picker = ImagePicker();
+  String? _profileImagePath;
+  bool _isUploading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedAvatar();
+  }
+
+  Future<void> _loadSavedAvatar() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _profileImagePath = prefs.getString('user_profile_image');
+    });
+  }
+
+  Future<void> _pickProfileAvatar() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return; // User cancelled
+
+      setState(() {
+        _isUploading = true;
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_profile_image', pickedFile.path);
+
+      if (mounted) {
+        setState(() {
+          _profileImagePath = pickedFile.path;
+          _isUploading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✨ Profile picture updated successfully!'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update avatar: $e'),
+            backgroundColor: AppColors.alert,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +88,16 @@ class ProfileScreen extends StatelessWidget {
     final user = auth.user;
     final userName = user?.name ?? 'Posture Pro User';
     final userEmail = user?.email ?? 'user@example.com';
-    final avatarLetter = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
+    final avatarLetter = userName.isNotEmpty ? userName[0].toUpperCase() : 'Y';
+
+    ImageProvider? avatarImage;
+    if (_profileImagePath != null && _profileImagePath!.isNotEmpty) {
+      if (_profileImagePath!.startsWith('http')) {
+        avatarImage = NetworkImage(_profileImagePath!);
+      } else {
+        avatarImage = FileImage(File(_profileImagePath!));
+      }
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -33,16 +113,85 @@ class ProfileScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                CircleAvatar(
-                  radius: 36,
-                  backgroundColor: AppColors.primary,
-                  child: Text(
-                    avatarLetter,
-                    style: AppTextStyles.fontMono(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
+                GestureDetector(
+                  onTap: _pickProfileAvatar,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 86,
+                        height: 86,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.primaryLight,
+                          border: Border.all(color: AppColors.primary, width: 3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.2),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                          image: avatarImage != null
+                              ? DecorationImage(
+                                  image: avatarImage,
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: avatarImage == null
+                            ? Center(
+                                child: Text(
+                                  avatarLetter,
+                                  style: AppTextStyles.fontMono(
+                                    fontSize: 34,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              )
+                            : null,
+                      ),
+                      if (_isUploading)
+                        Container(
+                          width: 86,
+                          height: 86,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.black.withOpacity(0.4),
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                          ),
+                        ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.primary,
+                            border: Border.all(color: Colors.white, width: 2),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            LucideIcons.camera,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 12),

@@ -52,6 +52,39 @@ def get_user_status():
     except Exception as e:
         return jsonify({'message': f'Database read failure: {str(e)}'}), 500
 
+@user_bp.route('/user/avatar', methods=['POST'])
+@token_required
+def upload_avatar():
+    """
+    Uploads a new user profile picture directly to Cloudinary and saves URL in posture_ai.users.
+    """
+    file = request.files.get('file') or request.files.get('avatar')
+    data = request.get_json() or {}
+    image_source = file or data.get('profile_image') or data.get('image')
+
+    if not image_source:
+        return jsonify({'message': 'No avatar image file or data provided!'}), 400
+
+    try:
+        from services.cloudinary_service import upload_image_to_cloudinary
+        cloudinary_url = upload_image_to_cloudinary(image_source, folder="posture-ai/avatars")
+        
+        db.users.update_one(
+            {'$or': [{'_id': g.user_id}, {'user_id': g.user_id}]},
+            {'$set': {'profile_image': cloudinary_url}},
+            upsert=True
+        )
+
+        print(f"[DB] Updated profile_image for user {g.user_id}: {cloudinary_url}")
+        return jsonify({
+            'status': 'success',
+            'message': 'Profile picture updated successfully!',
+            'profile_image': cloudinary_url
+        }), 200
+    except Exception as e:
+        print(f"[AVATAR ERROR] Upload avatar failed: {e}")
+        return jsonify({'message': f'Avatar upload failure: {str(e)}'}), 500
+
 @user_bp.route('/user/profile', methods=['PUT'])
 @token_required
 def update_profile():
