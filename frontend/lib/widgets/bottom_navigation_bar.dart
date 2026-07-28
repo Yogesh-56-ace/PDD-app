@@ -30,7 +30,7 @@ class CustomBottomNavBar extends StatelessWidget {
               _buildNavItem(0, LucideIcons.home, 'Home'),
               _buildNavItem(1, LucideIcons.imagePlus, 'Image Upload'),
               _buildNavItem(2, LucideIcons.clock, 'History'),
-              _buildNavItem(3, LucideIcons.barChart2, 'Stats'),
+              _buildNavItem(3, LucideIcons.barChart2, 'Statistics'),
               _buildNavItem(4, LucideIcons.user, 'Profile'),
             ],
           ),
@@ -54,15 +54,20 @@ class CustomBottomNavBar extends StatelessWidget {
               color: isSelected ? AppColors.primary : AppColors.textMuted,
             ),
             const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? AppColors.primary : AppColors.textMuted,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    color: isSelected ? AppColors.primary : AppColors.textMuted,
+                  ),
+                  maxLines: 1,
+                ),
               ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
             ),
           ],
         ),
