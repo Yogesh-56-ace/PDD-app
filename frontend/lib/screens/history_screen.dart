@@ -143,58 +143,88 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         itemBuilder: (context, index) {
                           final r = _filteredReports[index];
                           final score = r.overallScore;
+                          final isGood = score >= 80;
+                          final isFair = score >= 60 && score < 80;
+                          final statusLabel = isGood ? 'GOOD' : (isFair ? 'FAIR' : 'POOR');
+                          final badgeBg = isGood
+                              ? AppColors.primaryLight
+                              : (isFair ? AppColors.warningLight : AppColors.alertLight);
+                          final badgeColor = isGood
+                              ? AppColors.primary
+                              : (isFair ? AppColors.warning : AppColors.alert);
+
                           return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
+                            margin: const EdgeInsets.only(bottom: 14),
+                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                             decoration: BoxDecoration(
                               color: AppColors.cardBg,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(20),
                               boxShadow: const [AppColors.shadowCard],
                               border: Border.all(color: AppColors.borderLight),
                             ),
                             child: Column(
                               children: [
                                 Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Container(
-                                      width: 48,
-                                      height: 48,
+                                      width: 46,
+                                      height: 46,
                                       decoration: BoxDecoration(
-                                        color: score >= 85 ? AppColors.primaryLight : AppColors.warningLight,
-                                        borderRadius: BorderRadius.circular(12),
+                                        color: badgeBg,
+                                        borderRadius: BorderRadius.circular(14),
                                       ),
                                       child: Icon(
                                         r.type == 'video'
                                             ? LucideIcons.video
                                             : (r.type == 'live' ? LucideIcons.camera : LucideIcons.image),
-                                        color: score >= 85 ? AppColors.primary : AppColors.warning,
+                                        color: badgeColor,
+                                        size: 22,
                                       ),
                                     ),
                                     const SizedBox(width: 14),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          Text(r.date, style: AppTextStyles.h3.copyWith(fontSize: 14)),
-                                          const SizedBox(height: 4),
+                                          Text(
+                                            r.date,
+                                            style: AppTextStyles.h3.copyWith(fontSize: 14, fontWeight: FontWeight.bold),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                          const SizedBox(height: 3),
                                           Text(
                                             'Neck: ${r.neckAngle}° • Spine: ${r.spineAlignment}°',
-                                            style: AppTextStyles.caption,
+                                            style: AppTextStyles.caption.copyWith(fontSize: 12),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
                                           ),
                                         ],
                                       ),
                                     ),
-                                    Text(
-                                      '$score%',
-                                      style: AppTextStyles.fontMono(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                        color: score >= 85 ? AppColors.primary : AppColors.warning,
+                                    const SizedBox(width: 12),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: badgeBg,
+                                        borderRadius: BorderRadius.circular(24),
+                                        border: Border.all(color: badgeColor.withOpacity(0.3)),
+                                      ),
+                                      child: Text(
+                                        '$statusLabel ($score%)',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: badgeColor,
+                                          letterSpacing: 0.3,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                const Divider(height: 20),
+                                const Divider(height: 22),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
