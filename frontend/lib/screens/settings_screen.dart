@@ -5,7 +5,6 @@ import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/base_layout.dart';
-import '../widgets/custom_app_bar.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,11 +14,15 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  double _sensitivity = 0.7;
+  double _sensitivity = 0.6;
   bool _soundAlerts = true;
   bool _vibrationAlerts = true;
+  bool _cloudSync = true;
+  bool _autoSave = true;
+  bool _postureReminders = true;
+  String _cameraResolution = '720p (Recommended)';
 
-  void _showSupportDetail({
+  void _showModalSheet({
     required BuildContext context,
     required String title,
     required IconData icon,
@@ -32,7 +35,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          maxHeight: MediaQuery.of(context).size.height * 0.75,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.75,
+          ),
           decoration: const BoxDecoration(
             color: AppColors.cardBg,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -101,20 +106,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSupportItem({
+  Widget _buildSettingTile({
     required IconData icon,
     required String title,
+    required String subtitle,
     required VoidCallback onTap,
     Color iconColor = AppColors.primary,
+    Widget? trailing,
     bool isLast = false,
   }) {
     return Column(
       children: [
         ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-          leading: Icon(icon, color: iconColor, size: 20),
-          title: Text(title, style: AppTextStyles.body),
-          trailing: const Icon(LucideIcons.chevronRight, size: 18, color: AppColors.textMuted),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 18),
+          ),
+          title: Text(title, style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+          subtitle: Text(subtitle, style: AppTextStyles.caption),
+          trailing: trailing ?? const Icon(LucideIcons.chevronRight, size: 18, color: AppColors.textMuted),
           onTap: onTap,
         ),
         if (!isLast) const Divider(height: 1, indent: 52, color: AppColors.accentGray),
@@ -127,13 +142,95 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final theme = Provider.of<ThemeProvider>(context);
 
     return BaseLayout(
-      title: 'App Settings',
+      title: 'Settings Suite',
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Monitoring Sensitivity', style: AppTextStyles.h3),
+            // 1. Account Section
+            Text('Account Settings', style: AppTextStyles.h3),
+            const SizedBox(height: 8),
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.cardBg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.borderLight),
+              ),
+              child: Column(
+                children: [
+                  _buildSettingTile(
+                    icon: LucideIcons.userCheck,
+                    title: 'Edit Profile',
+                    subtitle: 'Name, email & profile photo',
+                    onTap: () => _showModalSheet(
+                      context: context,
+                      title: 'Edit Profile',
+                      icon: LucideIcons.userCheck,
+                      description: 'Update profile details',
+                      bodyWidgets: [
+                        Text('• Name: Yogesh', style: AppTextStyles.body),
+                        const SizedBox(height: 8),
+                        Text('• Email: yogesh@posturefixpro.com', style: AppTextStyles.body),
+                      ],
+                    ),
+                  ),
+                  _buildSettingTile(
+                    icon: LucideIcons.keyRound,
+                    title: 'Change Password',
+                    subtitle: 'Update security credentials',
+                    onTap: () => _showModalSheet(
+                      context: context,
+                      title: 'Change Password',
+                      icon: LucideIcons.keyRound,
+                      description: 'Security settings',
+                      bodyWidgets: [
+                        Text('Password security is managed via TLS 1.3 JWT tokens.', style: AppTextStyles.body),
+                      ],
+                    ),
+                  ),
+                  _buildSettingTile(
+                    icon: LucideIcons.userX,
+                    title: 'Delete Account',
+                    subtitle: 'Permanently erase data & metrics',
+                    iconColor: AppColors.alert,
+                    isLast: true,
+                    onTap: () => _showModalSheet(
+                      context: context,
+                      title: 'Delete Account',
+                      icon: LucideIcons.userX,
+                      description: 'Permanent Action Warning',
+                      bodyWidgets: [
+                        Text('Deleting account will permanently wipe all local and cloud data.', style: AppTextStyles.body.copyWith(color: AppColors.alert)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // 2. Appearance
+            Text('Appearance', style: AppTextStyles.h3),
+            const SizedBox(height: 8),
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.cardBg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.borderLight),
+              ),
+              child: SwitchListTile(
+                title: Text('Dark Theme', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+                subtitle: Text('Enable dark mode UI styling', style: AppTextStyles.caption),
+                value: theme.isDarkMode,
+                activeColor: AppColors.primary,
+                onChanged: (val) => theme.toggleDarkMode(val),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // 3. AI & Posture Engine
+            Text('AI & Posture Engine', style: AppTextStyles.h3),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(16),
@@ -148,8 +245,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Detection Strictness', style: AppTextStyles.body),
-                      Text('${(_sensitivity * 100).toInt()}%', style: AppTextStyles.fontMono(fontWeight: FontWeight.w700)),
+                      Text('Detection Sensitivity', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+                      Text('${(_sensitivity * 10).toInt()}/10', style: AppTextStyles.fontMono(fontWeight: FontWeight.w700)),
                     ],
                   ),
                   Slider(
@@ -157,12 +254,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     activeColor: AppColors.primary,
                     onChanged: (val) => setState(() => _sensitivity = val),
                   ),
-                  Text('Higher sensitivity triggers slouch alerts earlier.', style: AppTextStyles.caption),
+                  Text('Higher sensitivity alerts slumping earlier.', style: AppTextStyles.caption),
                 ],
               ),
             ),
             const SizedBox(height: 24),
-            Text('Alert Preferences', style: AppTextStyles.h3),
+
+            // 4. Sync & Storage
+            Text('Sync & Storage', style: AppTextStyles.h3),
             const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
@@ -173,42 +272,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 children: [
                   SwitchListTile(
-                    title: Text('Audio Alert Chime', style: AppTextStyles.body),
-                    subtitle: Text('Play soft alert sound on bad posture', style: AppTextStyles.caption),
-                    value: _soundAlerts,
+                    title: Text('Cloud Data Sync', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w600)),
+                    subtitle: Text('MongoDB Atlas session syncing', style: AppTextStyles.caption),
+                    value: _cloudSync,
                     activeColor: AppColors.primary,
-                    onChanged: (val) => setState(() => _soundAlerts = val),
+                    onChanged: (val) => setState(() => _cloudSync = val),
                   ),
                   const Divider(height: 1, color: AppColors.accentGray),
-                  SwitchListTile(
-                    title: Text('Haptic Vibration', style: AppTextStyles.body),
-                    subtitle: Text('Vibrate phone on slouch alert', style: AppTextStyles.caption),
-                    value: _vibrationAlerts,
-                    activeColor: AppColors.primary,
-                    onChanged: (val) => setState(() => _vibrationAlerts = val),
+                  _buildSettingTile(
+                    icon: LucideIcons.refreshCw,
+                    title: 'Sync Now',
+                    subtitle: 'Trigger manual cloud sync',
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('✅ Cloud Sync Completed Successfully!')),
+                      );
+                    },
+                  ),
+                  _buildSettingTile(
+                    icon: LucideIcons.trash2,
+                    title: 'Clear Cache',
+                    subtitle: 'Temporary Cache: 4.2 MB',
+                    iconColor: AppColors.warning,
+                    isLast: true,
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('🧹 Local Cache Cleared!')),
+                      );
+                    },
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
-            Text('Appearance', style: AppTextStyles.h3),
-            const SizedBox(height: 8),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.cardBg,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.borderLight),
-              ),
-              child: SwitchListTile(
-                title: Text('Dark Mode', style: AppTextStyles.body),
-                subtitle: Text('Use dark theme for posture monitoring', style: AppTextStyles.caption),
-                value: theme.isDarkMode,
-                activeColor: AppColors.primary,
-                onChanged: (val) => theme.toggleDarkMode(val),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text('Support & Information', style: AppTextStyles.h3),
+
+            // 5. Diagnostics & Info
+            Text('Diagnostics & Info', style: AppTextStyles.h3),
             const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(
@@ -218,125 +317,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               child: Column(
                 children: [
-                  _buildSupportItem(
-                    icon: LucideIcons.lifeBuoy,
-                    title: 'Help Center',
-                    onTap: () => _showSupportDetail(
-                      context: context,
-                      title: 'Help Center',
-                      icon: LucideIcons.lifeBuoy,
-                      description: 'Browse articles and FAQs',
-                      bodyWidgets: [
-                        Text('• Camera Setup Guide', style: AppTextStyles.body),
-                        const SizedBox(height: 8),
-                        Text('• AI Calibration Tips', style: AppTextStyles.body),
-                        const SizedBox(height: 8),
-                        Text('• Troubleshooting Alerts', style: AppTextStyles.body),
-                      ],
-                    ),
+                  _buildSettingTile(
+                    icon: LucideIcons.cpu,
+                    title: 'AI Model Version',
+                    subtitle: 'MediaPipe Pose v0.10 (33 Landmarks)',
+                    onTap: () {},
                   ),
-                  _buildSupportItem(
-                    icon: LucideIcons.headphones,
-                    title: 'Contact Support',
-                    onTap: () => _showSupportDetail(
-                      context: context,
-                      title: 'Contact Support',
-                      icon: LucideIcons.headphones,
-                      description: 'Get 24/7 assistance from our team',
-                      bodyWidgets: [
-                        Text('Email: support@posturefixpro.com', style: AppTextStyles.body),
-                        const SizedBox(height: 8),
-                        Text('Average Response Time: < 2 hours', style: AppTextStyles.caption),
-                      ],
-                    ),
+                  _buildSettingTile(
+                    icon: LucideIcons.server,
+                    title: 'Backend API Status',
+                    subtitle: '🟢 http://localhost:5000/api Online',
+                    onTap: () {},
                   ),
-                  _buildSupportItem(
-                    icon: LucideIcons.messageSquarePlus,
-                    title: 'Send Feedback',
-                    onTap: () => _showSupportDetail(
-                      context: context,
-                      title: 'Send Feedback',
-                      icon: LucideIcons.messageSquarePlus,
-                      description: 'Share your thoughts and requests',
-                      bodyWidgets: [
-                        Text('We love hearing from our community!', style: AppTextStyles.body),
-                        const SizedBox(height: 8),
-                        Text('Send feature suggestions or report UI issues anytime.', style: AppTextStyles.caption),
-                      ],
-                    ),
-                  ),
-                  _buildSupportItem(
-                    icon: LucideIcons.bookOpen,
-                    title: 'User Guide',
-                    onTap: () => _showSupportDetail(
-                      context: context,
-                      title: 'User Guide',
-                      icon: LucideIcons.bookOpen,
-                      description: 'Learn how to maximize your posture health',
-                      bodyWidgets: [
-                        Text('1. Place device 2-3 feet away at eye level.', style: AppTextStyles.body),
-                        const SizedBox(height: 6),
-                        Text('2. Sit upright to calibrate baseline.', style: AppTextStyles.body),
-                        const SizedBox(height: 6),
-                        Text('3. Receive gentle reminders when slumping.', style: AppTextStyles.body),
-                      ],
-                    ),
-                  ),
-                  _buildSupportItem(
-                    icon: LucideIcons.star,
-                    title: 'Rate Our App',
-                    iconColor: const Color(0xFFF59E0B),
-                    onTap: () => _showSupportDetail(
-                      context: context,
-                      title: 'Rate Our App',
-                      icon: LucideIcons.star,
-                      description: 'Support PostureFixPro with a 5-star rating',
-                      bodyWidgets: [
-                        const Center(child: Text('⭐⭐⭐⭐⭐', style: TextStyle(fontSize: 28))),
-                        const SizedBox(height: 12),
-                        Center(child: Text('Thank you for helping us grow!', style: AppTextStyles.body)),
-                      ],
-                    ),
-                  ),
-                  _buildSupportItem(
-                    icon: LucideIcons.shieldCheck,
-                    title: 'Privacy Policy',
-                    onTap: () => _showSupportDetail(
-                      context: context,
-                      title: 'Privacy Policy',
-                      icon: LucideIcons.shieldCheck,
-                      description: 'On-device AI processing & data encryption',
-                      bodyWidgets: [
-                        Text('Camera feeds are processed locally on-device. No raw video is stored without consent.', style: AppTextStyles.body),
-                      ],
-                    ),
-                  ),
-                  _buildSupportItem(
-                    icon: LucideIcons.fileText,
-                    title: 'Terms & Conditions',
-                    onTap: () => _showSupportDetail(
-                      context: context,
-                      title: 'Terms & Conditions',
-                      icon: LucideIcons.fileText,
-                      description: 'App usage & health guidance terms',
-                      bodyWidgets: [
-                        Text('PostureFixPro provides ergonomic insights and is not a replacement for medical diagnosis.', style: AppTextStyles.body),
-                      ],
-                    ),
-                  ),
-                  _buildSupportItem(
+                  _buildSettingTile(
                     icon: LucideIcons.info,
                     title: 'About PostureFixPro',
+                    subtitle: 'v1.0.0 (Build 104) • Flutter & MediaPipe',
                     isLast: true,
-                    onTap: () => _showSupportDetail(
+                    onTap: () => _showModalSheet(
                       context: context,
                       title: 'About PostureFixPro',
                       icon: LucideIcons.info,
                       description: 'v1.0.0 (Build 104) • MediaPipe AI',
                       bodyWidgets: [
-                        Text('AI-Powered Posture Monitoring & Correction System.', style: AppTextStyles.body),
-                        const SizedBox(height: 6),
-                        Text('Built with Flutter, Python Flask & MongoDB Atlas.', style: AppTextStyles.caption),
+                        Text('AI-Powered Posture Monitoring System', style: AppTextStyles.body),
                       ],
                     ),
                   ),
