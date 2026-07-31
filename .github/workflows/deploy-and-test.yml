@@ -9,8 +9,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 env:
   BASE_URL: https://Yogesh-56-ace.github.io/PDD-app/
@@ -61,7 +59,7 @@ jobs:
         run: |
           python automation/run_tests.py
 
-      # Stage 6: Deploy to GitHub Pages (gh-pages branch - zero API errors)
+      # Stage 6: Deploy Application to GitHub Pages Branch (gh-pages)
       - name: Stage 6 - Deploy Application to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
