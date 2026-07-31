@@ -9,12 +9,10 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   android-appium-e2e:
-    runs-on: macos-latest # Mac runner for hardware-accelerated Android Emulator
+    runs-on: macos-13 # Intel x86_64 macOS runner for hardware-accelerated Android Emulator
     steps:
       # Stage 1: Checkout Repository
       - name: Stage 1 - Checkout Repository
@@ -27,69 +25,53 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Stage 3 & 4: Setup Android SDK & Dependencies
+      # Stage 3 & 4: Setup Android SDK
       - name: Stage 3 & 4 - Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # Stage 5: Build APK
-      - name: Stage 5 - Build Android APK
-        run: |
-          echo "[INFO] Building Android Debug APK..."
-          cd android && ./gradlew assembleDebug || echo "Gradle build simulated for CI matrix."
-
-      # Stage 6 & 7: Start Android Emulator & Verify Readiness
-      - name: Stage 6 & 7 - Launch Android Emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 30
-          target: google_apis
-          arch: x86_64
-          profile: Nexus 6
-          script: |
-            echo "[INFO] Android Emulator booted and ready."
-            adb devices
-
-      # Stage 8 - 10: Setup Appium Server & Verify Health
-      - name: Stage 8, 9, 10 - Setup & Launch Appium Server
-        run: |
-          npm install -g appium
-          appium driver install uiautomator2
-          appium &
-          sleep 5
-
-      # Stage 11 - 17: Execute Appium E2E Tests & Generate Reports
-      - name: Setup Python for Appium Test Runner
+      # Stage 5: Setup Python Environment
+      - name: Stage 5 - Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install Test Runner Dependencies
+      - name: Install Python Automation Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install Appium-Python-Client openpyxl requests
+          pip install openpyxl requests Appium-Python-Client
 
-      - name: Execute Appium 500+ E2E Mobile Test Suite
-        run: |
-          python automation_mobile/run_mobile_tests.py
+      # Stage 6: Launch Android Emulator & Execute 500+ Appium Mobile E2E Tests
+      - name: Stage 6 - Launch Android Emulator & Run Appium Test Suite
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          target: default
+          arch: x86_64
+          profile: Nexus 6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-audio -no-boot-anim
+          script: |
+            echo "[INFO] Android Emulator booted successfully."
+            adb devices
+            npm install -g appium
+            appium driver install uiautomator2
+            appium &
+            sleep 5
+            python automation_mobile/run_mobile_tests.py
 
-      # Stage 18: Upload Artifacts
-      - name: Stage 18 - Upload Mobile E2E Artifacts
+      # Stage 7: Upload Mobile E2E Artifacts
+      - name: Stage 7 - Upload Mobile E2E Artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Appium-Mobile-E2E-Artifacts
+          name: Appium-Mobile-500-E2E-Artifacts
           path: |
             Test Results/Excel/Appium_Mobile_Automation_Report.xlsx
             Test Results/
           retention-days: 30
 
-      # Stage 19 & 20: Publish Reports to GitHub Pages & Execution History
-      - name: Stage 19 & 20 - Publish Appium Execution Reports
-        run: |
-          echo "[INFO] Appium mobile E2E execution report published."
-
-      # Stage 21: Publish GitHub Action Summary
-      - name: Stage 21 - Publish GitHub Action Execution Summary
+      # Stage 8: Publish GitHub Action Execution Summary
+      - name: Stage 8 - Publish GitHub Action Execution Summary
         if: always()
         run: |
           echo "# Android Appium E2E Execution Summary" >> $GITHUB_STEP_SUMMARY
