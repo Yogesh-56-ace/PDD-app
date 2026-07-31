@@ -1,54 +1,36 @@
+import os
+import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from automation.config.config import Config
-from automation.utils.logger import TestLogger
-
-logger = TestLogger.get_logger()
+from selenium.webdriver.common.by import By
+from automation.config.config import AutomationConfig
 
 class BasePage:
     def __init__(self, driver):
         self.driver = driver
-        self.wait = WebDriverWait(driver, Config.EXPLICIT_WAIT)
+        self.wait = WebDriverWait(driver, AutomationConfig.EXPLICIT_WAIT)
 
-    def open(self, path=""):
-        target_url = Config.BASE_URL.rstrip('/') + '/' + path.lstrip('/')
-        logger.info(f"Navigating to URL: {target_url}")
+    def navigate_to(self, url=None):
+        target_url = url or AutomationConfig.BASE_URL
         self.driver.get(target_url)
 
-    def find_element(self, locator):
-        return self.wait.until(EC.presence_of_element_located(locator))
+    def find_element(self, by, value):
+        return self.wait.until(EC.presence_of_element_located((by, value)))
 
-    def find_visible_element(self, locator):
-        return self.wait.until(EC.visibility_of_element_located(locator))
+    def click(self, by, value):
+        element = self.wait.until(EC.element_to_be_clickable((by, value)))
+        element.click()
 
-    def click(self, locator):
-        el = self.find_visible_element(locator)
-        el.click()
+    def type_text(self, by, value, text):
+        element = self.find_element(by, value)
+        element.clear()
+        element.send_keys(text)
 
-    def type(self, locator, text):
-        el = self.find_visible_element(locator)
-        el.clear()
-        el.send_keys(text)
+    def get_text(self, by, value):
+        return self.find_element(by, value).text
 
-    def get_text(self, locator):
-        return self.find_visible_element(locator).text.strip()
-
-    def is_displayed(self, locator):
-        try:
-            return self.find_element(locator).is_displayed()
-        except (TimeoutException, NoSuchElementException):
-            return False
-
-    def execute_script(self, script, *args):
-        return self.driver.execute_script(script, *args)
-
-    def scroll_into_view(self, locator):
-        el = self.find_element(locator)
-        self.driver.execute_script("arguments[0].scrollIntoView(true);", el)
-
-    def get_current_url(self):
-        return self.driver.current_url
-
-    def get_title(self):
-        return self.driver.title
+    def capture_screenshot(self, filename):
+        os.makedirs(AutomationConfig.SCREENSHOTS_DIR, exist_ok=True)
+        path = os.path.join(AutomationConfig.SCREENSHOTS_DIR, filename)
+        self.driver.save_screenshot(path)
+        return path

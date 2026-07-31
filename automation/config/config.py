@@ -1,36 +1,21 @@
 import os
-import sys
 
-class Config:
-    # Base URL configured via environment variable BASE_URL
-    # MANDATORY: Default strictly targets LIVE GitHub Pages deployment
-    DEFAULT_BASE_URL = "https://yogesh-56-ace.github.io/posturefixpro-app/"
-    BASE_URL = os.environ.get("BASE_URL", DEFAULT_BASE_URL).rstrip('/') + '/'
+class AutomationConfig:
+    # BASE_URL resolved dynamically from environment or defaults to LIVE GitHub Pages deployment URL
+    # MANDATORY: BASE_URL must be configurable via environment variable
+    BASE_URL = os.environ.get(
+        'BASE_URL',
+        'https://Yogesh-56-ace.github.io/PDD-app/'
+    ).rstrip('/') + '/'
 
-    # Driver settings
-    HEADLESS = os.environ.get("HEADLESS", "true").lower() in ("true", "1", "yes")
-    IMPLICIT_WAIT = int(os.environ.get("IMPLICIT_WAIT", "10"))
-    EXPLICIT_WAIT = int(os.environ.get("EXPLICIT_WAIT", "15"))
-    PAGE_LOAD_TIMEOUT = int(os.environ.get("PAGE_LOAD_TIMEOUT", "30"))
-
-    # Folder Paths
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    PROJECT_ROOT = os.path.dirname(BASE_DIR)
+    LOCAL_FALLBACK_URL = 'http://localhost:3000/'
     
-    RESULTS_DIR = os.path.join(PROJECT_ROOT, "Test Results")
-    EXCEL_DIR = os.path.join(RESULTS_DIR, "Excel")
-    HTML_DIR = os.path.join(RESULTS_DIR, "HTML")
-    SCREENSHOTS_DIR = os.path.join(RESULTS_DIR, "Screenshots")
-    LOGS_DIR = os.path.join(RESULTS_DIR, "Logs")
-    JSON_DIR = os.path.join(RESULTS_DIR, "JSON")
-    SUMMARY_DIR = os.path.join(RESULTS_DIR, "Summary")
+    HEADLESS = os.environ.get('HEADLESS', 'true').lower() == 'true'
+    IMPLICIT_WAIT = 10
+    EXPLICIT_WAIT = 15
+    RETRY_COUNT = 2
 
-    @classmethod
-    def ensure_directories(cls):
-        """Creates all report and evidence output directories."""
-        dirs = [
-            cls.RESULTS_DIR, cls.EXCEL_DIR, cls.HTML_DIR,
-            cls.SCREENSHOTS_DIR, cls.LOGS_DIR, cls.JSON_DIR, cls.SUMMARY_DIR
-        ]
-        for d in dirs:
-            os.makedirs(d, exist_ok=True)
+    # Artifact Directory Paths
+    REPORTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'reports'))
+    SCREENSHOTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'screenshots'))
+    LOGS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'logs'))
