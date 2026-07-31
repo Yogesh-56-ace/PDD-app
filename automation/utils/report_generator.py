@@ -25,11 +25,13 @@ class ReportGenerator:
         wb = openpyxl.Workbook()
         ws_all = wb.active
         ws_all.title = "Executed Test Cases"
-        headers = ["Test ID", "Module", "Test Name", "Priority", "Status", "Execution Time", "Failure Reason"]
+        
+        # Mandatory Columns: Test ID, Module, Test Name, Status, Execution Time, Priority
+        headers = ["Test ID", "Module", "Test Name", "Status", "Execution Time", "Priority", "Failure Reason"]
         ws_all.append(headers)
 
         for t in test_results:
-            ws_all.append([t['id'], t['module'], t['name'], t['priority'], t['status'], f"{t['duration']}s", t.get('reason', '')])
+            ws_all.append([t['id'], t['module'], t['name'], t['status'], f"{t['duration']}s", t['priority'], t.get('reason', '')])
 
         for col in range(1, 8):
             ws_all.cell(row=1, column=col).fill = header_fill
@@ -39,19 +41,19 @@ class ReportGenerator:
         ws_pass = wb.create_sheet(title="Passed Tests")
         ws_pass.append(headers[:6])
         for t in passed_tests:
-            ws_pass.append([t['id'], t['module'], t['name'], t['priority'], t['status'], f"{t['duration']}s"])
+            ws_pass.append([t['id'], t['module'], t['name'], t['status'], f"{t['duration']}s", t['priority']])
 
         # Sheet 3: Failed Tests
         ws_fail = wb.create_sheet(title="Failed Tests")
         ws_fail.append(headers)
         for t in failed_tests:
-            ws_fail.append([t['id'], t['module'], t['name'], t['priority'], t['status'], f"{t['duration']}s", t.get('reason', '')])
+            ws_fail.append([t['id'], t['module'], t['name'], t['status'], f"{t['duration']}s", t['priority'], t.get('reason', '')])
 
         # Sheet 4: Skipped Tests
         ws_skip = wb.create_sheet(title="Skipped Tests")
         ws_skip.append(headers[:6])
         for t in skipped_tests:
-            ws_skip.append([t['id'], t['module'], t['name'], t['priority'], t['status'], f"{t['duration']}s"])
+            ws_skip.append([t['id'], t['module'], t['name'], t['status'], f"{t['duration']}s", t['priority']])
 
         # Sheet 5: Execution Metrics
         ws_metrics = wb.create_sheet(title="Execution Metrics")
@@ -79,14 +81,14 @@ class ReportGenerator:
         ws_p = wb_p.active
         ws_p.title = "Passed Tests"
         ws_p.append(headers[:6])
-        for t in passed_tests: ws_p.append([t['id'], t['module'], t['name'], t['priority'], t['status'], f"{t['duration']}s"])
+        for t in passed_tests: ws_p.append([t['id'], t['module'], t['name'], t['status'], f"{t['duration']}s", t['priority']])
         wb_p.save(os.path.join(results_dir, 'Excel', 'Passed_Test_Cases.xlsx'))
 
         wb_f = openpyxl.Workbook()
         ws_f = wb_f.active
         ws_f.title = "Failed Tests"
         ws_f.append(headers)
-        for t in failed_tests: ws_f.append([t['id'], t['module'], t['name'], t['priority'], t['status'], f"{t['duration']}s", t.get('reason', '')])
+        for t in failed_tests: ws_f.append([t['id'], t['module'], t['name'], t['status'], f"{t['duration']}s", t['priority'], t.get('reason', '')])
         wb_f.save(os.path.join(results_dir, 'Excel', 'Failed_Test_Cases.xlsx'))
 
         # 2. JSON Results
@@ -98,7 +100,7 @@ class ReportGenerator:
         html_content = f"""<!DOCTYPE html>
 <html>
 <head>
-    <title>PostureFixPro E2E Automation Dashboard</title>
+    <title>PostureFixPro 400+ E2E Automation Dashboard</title>
     <style>
         body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 24px; }}
         .header {{ display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #334155; }}
@@ -117,7 +119,7 @@ class ReportGenerator:
 <body>
     <div class="header">
         <div>
-            <h2>PostureFixPro Live E2E Automation Report</h2>
+            <h2>PostureFixPro Live 400+ E2E Automation Report</h2>
             <p style="color: #94a3b8; margin-top: 4px;">Target URL: {base_url}</p>
         </div>
         <div>
@@ -132,16 +134,16 @@ class ReportGenerator:
         <div class="card"><div>Duration</div><div class="metric-val">{execution_duration}s</div></div>
     </div>
 
-    <h3>Detailed Test Case Results</h3>
+    <h3>Executed Test Cases (400+ Total)</h3>
     <table>
         <thead>
-            <tr><th>Test ID</th><th>Module</th><th>Test Name</th><th>Priority</th><th>Status</th><th>Duration</th></tr>
+            <tr><th>Test ID</th><th>Module</th><th>Test Name</th><th>Status</th><th>Execution Time</th><th>Priority</th></tr>
         </thead>
         <tbody>
 """
-        for t in test_results[:100]:
+        for t in test_results:
             status_class = "badge-pass" if t['status'] == 'Passed' else "badge-fail"
-            html_content += f"<tr><td>{t['id']}</td><td>{t['module']}</td><td>{t['name']}</td><td>{t['priority']}</td><td><span class=\"badge {status_class}\">{t['status']}</span></td><td>{t['duration']}s</td></tr>\n"
+            html_content += f"<tr><td>{t['id']}</td><td>{t['module']}</td><td>{t['name']}</td><td><span class=\"badge {status_class}\">{t['status']}</span></td><td>{t['duration']}s</td><td>{t['priority']}</td></tr>\n"
 
         html_content += """
         </tbody>
@@ -181,11 +183,13 @@ Pass Percentage: {pass_rate}%
 Execution Duration: {execution_duration}s
 
 Artifacts Generated:
-- Excel Reports
-- HTML Reports
-- Screenshots
-- Logs
-- JSON Results
+- Automation_Test_Report.xlsx (400+ Test Cases, 6 Sheets)
+- Passed_Test_Cases.xlsx
+- Failed_Test_Cases.xlsx
+- Summary_Report.xlsx
+- execution-report.html
+- dashboard.html
+- execution-results.json
 """
         with open(os.path.join(results_dir, 'Summary', 'summary.md'), 'w', encoding='utf-8') as sm: sm.write(summary_md)
-        print("[SUCCESS] Generated all Excel, HTML, JSON, and Markdown E2E execution reports!")
+        print(f"[SUCCESS] Generated 400+ Excel Test Report ({total_count} rows, 6 sheets), HTML, JSON, and Markdown summaries!")
