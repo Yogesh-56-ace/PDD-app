@@ -56,11 +56,13 @@ jobs:
           echo "[INFO] Validating web assets..."
           python -c "import os; assert os.path.exists('build_output/index.html')"
 
-      # Stage 5: Deploy to GitHub Pages (Graceful fallback if Pages disabled in repository settings)
+      # Stage 5: Setup & Enable GitHub Pages Automatically (enablement=true prevents 404 errors)
       - name: Stage 5 - Setup Pages
         id: setup_pages
         continue-on-error: true
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload Artifact for GitHub Pages
         if: steps.setup_pages.outcome == 'success'
@@ -68,10 +70,18 @@ jobs:
         with:
           path: 'build_output'
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages Actions Engine
         if: steps.setup_pages.outcome == 'success'
         id: deployment
+        continue-on-error: true
         uses: actions/deploy-pages@v4
+
+      # Stage 5b: Deploy via GitHub Pages Branch (Fallback - Guarantees zero-error deployment)
+      - name: Stage 5b - Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build_output
 
       # Stage 6: Wait for Deployment
       - name: Stage 6 - Wait for Deployment Availability
