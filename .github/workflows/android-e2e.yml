@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   android-appium-e2e:
-    runs-on: macos-13 # Intel x86_64 macOS runner for hardware-accelerated Android Emulator
+    runs-on: ubuntu-latest # Linux runner with hardware KVM acceleration for lightning-fast Android Emulator boot
     steps:
       # Stage 1: Checkout Repository
       - name: Stage 1 - Checkout Repository
@@ -25,11 +25,17 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # Stage 3 & 4: Setup Android SDK
-      - name: Stage 3 & 4 - Setup Android SDK
+      # Stage 3 & 4: Enable Linux KVM Hardware Acceleration & Android SDK
+      - name: Stage 3 - Enable KVM Hardware Acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm-rules.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm || true
+
+      - name: Stage 4 - Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # Stage 5: Setup Python Environment
+      # Stage 5: Setup Python & Dependencies
       - name: Stage 5 - Setup Python
         uses: actions/setup-python@v5
         with:
@@ -40,28 +46,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install openpyxl requests Appium-Python-Client
 
-      # Stage 6: Execute 500+ Appium Mobile E2E Tests & Generate Reports
-      - name: Stage 6 - Execute 500+ Appium Mobile E2E Test Suite
-        run: |
-          python automation_mobile/run_mobile_tests.py
-
-      # Stage 7: Launch Android Emulator & Appium Device Verification
-      - name: Stage 7 - Launch Android Emulator & Device Verification
-        continue-on-error: true
+      # Stage 6: Launch KVM Accelerated Android Emulator & Run 500+ Appium Mobile Test Suite
+      - name: Stage 6 - Launch KVM Accelerated Android Emulator & Run Appium Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 28
+          api-level: 29
           target: default
           arch: x86_64
           profile: Nexus 6
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          emulator-options: -no-window -gpu swiftshader_indirect -no-audio -no-boot-anim
           script: |
-            echo "[INFO] Android Emulator booted successfully."
+            echo "[INFO] KVM Hardware Accelerated Android Emulator booted successfully."
             adb devices
+            python automation_mobile/run_mobile_tests.py
 
-      # Stage 8: Upload Mobile E2E Artifacts
-      - name: Stage 8 - Upload Mobile E2E Artifacts
+      # Stage 7: Upload Mobile E2E Artifacts
+      - name: Stage 7 - Upload Mobile E2E Artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -71,8 +72,8 @@ jobs:
             Test Results/
           retention-days: 30
 
-      # Stage 9: Publish GitHub Action Execution Summary
-      - name: Stage 9 - Publish GitHub Action Execution Summary
+      # Stage 8: Publish GitHub Action Execution Summary
+      - name: Stage 8 - Publish GitHub Action Execution Summary
         if: always()
         run: |
           echo "# Android Appium E2E Execution Summary" >> $GITHUB_STEP_SUMMARY
