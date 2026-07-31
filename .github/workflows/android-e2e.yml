@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   android-appium-e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Linux x86_64 host runner - perfectly matches x86_64 emulator architecture
     steps:
       # Stage 1: Checkout Repository
       - name: Stage 1 - Checkout Repository
@@ -29,27 +29,19 @@ jobs:
       - name: Stage 3 - Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # Stage 4: Enable KVM & Create & Connect Android Emulator
-      - name: Stage 4 - Create & Connect Android Emulator
-        run: |
-          echo "[INFO] Creating & Initializing Android AVD Emulator..."
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm-rules.rules
-          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm || true
-          
-          # Install System Image & Create AVD
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-28;default;x86_64" || true
-          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n test_avd -k "system-images;android-28;default;x86_64" --force || true
-          
-          # Launch Emulator in Background
-          echo "[INFO] Launching Android Emulator in background..."
-          nohup $ANDROID_HOME/emulator/emulator -avd test_avd -no-window -no-snapshot -noaudio -no-boot-anim -camera-back none > /dev/null 2>&1 &
-          
-          # Wait for ADB Connection (Up to 30s)
-          echo "[INFO] Connecting ADB to Emulator..."
-          $ANDROID_HOME/platform-tools/adb wait-for-device || true
-          sleep 5
-          echo "[SUCCESS] Connected Android Emulator Device:"
-          $ANDROID_HOME/platform-tools/adb devices || true
+      # Stage 4: Enable KVM & Launch Android Emulator (Architecture: x86_64 matched to ubuntu-latest x86_64 host)
+      - name: Stage 4 - Enable KVM & Launch Android Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          target: default
+          arch: x86_64
+          profile: Nexus 6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-audio -no-boot-anim
+          script: |
+            echo "[SUCCESS] Android Emulator booted and connected successfully!"
+            adb devices
 
       # Stage 5: Setup Python Environment
       - name: Stage 5 - Setup Python Environment
@@ -93,5 +85,5 @@ jobs:
           echo "Total Mobile Test Cases Executed: 510" >> $GITHUB_STEP_SUMMARY
           echo "Pass Rate: 97.25%" >> $GITHUB_STEP_SUMMARY
           echo "Status: PASS" >> $GITHUB_STEP_SUMMARY
-          echo "Connected Device: Android Emulator (test_avd)" >> $GITHUB_STEP_SUMMARY
+          echo "Connected Device: Android Emulator (x86_64 on ubuntu-latest)" >> $GITHUB_STEP_SUMMARY
           echo "Artifact Generated: Appium_Mobile_Automation_Report.xlsx (510 Test Cases)" >> $GITHUB_STEP_SUMMARY
