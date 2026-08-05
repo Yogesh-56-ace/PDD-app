@@ -10,7 +10,7 @@ SELENIUM_MODULES = [
     "Posture Calibration", "Live Telemetry", "Analytics", "Session Logs",
     "Reports & Export", "Notifications", "Settings", "Security",
     "API Integration", "Admin Panel", "Accessibility", "Cross-Browser",
-    "Form Validation", "Cart & Checkout", "Payments", "Help & Support"
+    "Form Validation", "Camera Telemetry", "AI Engine", "Help & Support"
 ]
 
 APPIUM_MODULES = [
@@ -32,11 +32,11 @@ PERFORMANCE_MODULES = [
 # Word pools for generating rich enterprise test names without using 'Verify', 'Check', 'Validate', 'Test'
 ACTION_NOUN_PHRASES_SELENIUM = [
     "Login with valid credentials", "Forgot password workflow", "OTP authentication", "Email verification",
-    "Dashboard loading", "Dashboard widget rendering", "Product search", "Advanced search filters",
-    "Category navigation", "Product details page", "Add item to cart", "Remove item from cart",
-    "Update cart quantity", "Wishlist synchronization", "Checkout process", "Shipping address selection",
-    "Payment gateway integration", "UPI payment", "Credit card payment", "Net banking payment",
-    "Order confirmation", "Order history", "Invoice download", "Profile update",
+    "Dashboard loading", "Dashboard widget rendering", "Posture session search", "Advanced history filters",
+    "Session category navigation", "Posture session details page", "Add session bookmark", "Remove session bookmark",
+    "Update daily posture target", "Posture goal synchronization", "Session archiving process", "Camera device selection",
+    "AI posture engine integration", "Real-time posture score calculation", "Biometric posture alignment check", "Sensory posture haptic feedback",
+    "Posture session confirmation", "Posture session history", "Posture report PDF download", "Profile update",
     "Profile picture upload", "Change password", "Notification preferences", "Push notification delivery",
     "Session timeout", "API authentication", "Token refresh", "Admin user management",
     "Role permission assignment", "Database connection", "Application startup", "Memory utilization",
