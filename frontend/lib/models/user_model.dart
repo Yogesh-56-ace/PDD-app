@@ -15,6 +15,8 @@ class UserModel {
     this.onboardingCompleted = false,
   });
 
+  String get userId => id;
+
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['user_id'] ?? json['id'] ?? '',

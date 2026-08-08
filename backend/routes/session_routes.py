@@ -23,6 +23,21 @@ def parse_user_id():
             pass
     return None
 
+@session_bp.route('/session/start', methods=['POST'])
+def session_start():
+    user_id = parse_user_id() or 'user_demo_001'
+    session_id = f"rpt_{str(uuid.uuid4())[:8]}"
+    return jsonify({
+        'status': 'active',
+        'session_id': session_id,
+        'user_id': user_id,
+        'message': 'Session started successfully'
+    }), 200
+
+@session_bp.route('/session/end', methods=['POST'])
+def session_end():
+    return save_session()
+
 @session_bp.route('/save-session', methods=['POST'])
 def save_session():
     """Manual analytics save endpoint directly saving into posture_ai.history and posture_ai.reports."""
@@ -64,6 +79,11 @@ def save_session():
         }), 201
     except Exception as e:
         return jsonify({'message': f'Database write failure: {str(e)}'}), 500
+
+@session_bp.route('/sessions', methods=['GET'])
+def get_current_user_sessions():
+    user_id = parse_user_id() or 'user_demo_001'
+    return get_user_sessions(user_id)
 
 @session_bp.route('/sessions/<user_id>', methods=['GET'])
 def get_user_sessions(user_id):

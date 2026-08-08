@@ -10,7 +10,7 @@ alert_bp = Blueprint('alert', __name__)
 @alert_bp.route('/alerts', methods=['POST'])
 @token_required
 def create_alert():
-    """Records a poor posture warning alert log in Firestore."""
+    """Records a poor posture warning alert log in posture_ai.alerts."""
     data = request.get_json() or {}
     duration = data.get('duration', 0)
     suggestion = data.get('suggestion', "")
@@ -27,7 +27,7 @@ def create_alert():
             alert_type=alert_type
         )
         
-        db.collection('alerts').document(alert_id).set(alert.to_dict())
+        db['alerts'].insert_one(alert.to_dict())
         
         return jsonify({
             'message': 'Posture alert event persisted successfully.',
@@ -37,6 +37,11 @@ def create_alert():
     except Exception as e:
         return jsonify({'message': f'Database write failure: {str(e)}'}), 500
 
+@alert_bp.route('/alerts', methods=['GET'])
+@token_required
+def get_current_user_alerts():
+    return get_user_alerts(g.user_id)
+
 @alert_bp.route('/alerts/<user_id>', methods=['GET'])
 @token_required
 def get_user_alerts(user_id):
@@ -45,11 +50,7 @@ def get_user_alerts(user_id):
         return jsonify({'message': 'Access Denied: Token ownership mismatch!'}), 403
         
     try:
-        alerts_ref = db.collection('alerts').where('user_id', '==', user_id).get()
-        
-        alerts_list = []
-        for doc in alerts_ref:
-            alerts_list.append(doc.to_dict())
+        alerts_list = list(db['alerts'].find({'user_id': user_id}))
             
         # Sort alerts descending by timestamp
         alerts_list.sort(key=lambda x: x.get('timestamp', ''), reverse=True)

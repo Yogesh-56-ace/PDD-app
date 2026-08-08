@@ -245,9 +245,8 @@ class _LiveCameraScreenState extends State<LiveCameraScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
+      );
+    }
 
   Widget _buildMetricItem(String label, String value) {
     return Column(

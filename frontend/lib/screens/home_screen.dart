@@ -15,6 +15,8 @@ import 'statistics_screen.dart';
 import 'upload_image_screen.dart';
 import 'upload_video_screen.dart';
 
+import '../services/ai_analysis_service.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -24,10 +26,60 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentBottomNavIndex = 0;
+  bool _isLoading = false;
+  String _durationStr = '0m';
+  int _correctionsVal = 0;
+  int? _scoreVal;
+  String _statusBadge = 'No Session Data';
+  String _statusTitle = 'No Scans Yet';
+  String _statusDesc = 'Complete your first AI posture scan or live camera tracking session to view real-time posture analytics.';
+  String _emoji = '📊';
+  String _aiInsight = 'Take your first AI posture scan or start live webcam tracking to unlock personalized AI ergonomic insights and body alignment analysis.';
+  String _recommendedStretch = 'Start a 2-minute live camera tracking session.';
+  bool _hasSessions = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadDashboardStats();
+    });
+  }
+
+  Future<void> _loadDashboardStats() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final userId = auth.user?.userId ?? 'user_demo_001';
+
+    final data = await AiAnalysisService.fetchDashboard(userId);
+
+    if (data != null && mounted) {
+      setState(() {
+        _hasSessions = data['has_sessions'] ?? false;
+        _durationStr = data['today_duration_str'] ?? '0m';
+        _correctionsVal = data['today_corrections'] ?? 0;
+        _scoreVal = data['latest_score'];
+        _statusBadge = data['latest_status'] ?? 'No Session Data';
+        _statusTitle = data['latest_title'] ?? 'No Scans Yet';
+        _statusDesc = data['latest_desc'] ?? 'Complete your first AI posture scan or live camera tracking session to view real-time posture analytics.';
+        _emoji = data['emoji'] ?? '📊';
+        _aiInsight = data['ai_insight'] ?? 'Take your first AI posture scan or start live webcam tracking to unlock personalized AI ergonomic insights and body alignment analysis.';
+        _recommendedStretch = data['recommended_stretch'] ?? 'Start a 2-minute live camera tracking session.';
+        _isLoading = false;
+      });
+    } else if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
 
   void _onBottomNavTapped(int index) {
     if (index == _currentBottomNavIndex) return;
     setState(() => _currentBottomNavIndex = index);
+    if (index == 0) {
+      _loadDashboardStats();
+    }
   }
 
   Widget _buildBody() {
@@ -122,14 +174,36 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 20),
 
-          // 2. Aligned & Healthy Card (Green Background with Emoji)
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
+            ),
+
+          // 2. Dynamic Posture Status Card (Hero Card)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFFE9FAEE),
+              color: !_hasSessions
+                  ? const Color(0xFFF8FAFC)
+                  : ((_scoreVal ?? 0) >= 85
+                      ? const Color(0xFFE9FAEE)
+                      : ((_scoreVal ?? 0) >= 70
+                          ? const Color(0xFFFFF7ED)
+                          : const Color(0xFFFEF2F2))),
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: const Color(0xFFC3F3D5)),
+              border: Border.all(
+                color: !_hasSessions
+                    ? const Color(0xFFE2E8F0)
+                    : ((_scoreVal ?? 0) >= 85
+                        ? const Color(0xFFC3F3D5)
+                        : ((_scoreVal ?? 0) >= 70
+                            ? const Color(0xFFFED7AA)
+                            : const Color(0xFFFCA5A5))),
+              ),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,18 +212,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Good Posture',
+                      Text(
+                        _statusBadge,
                         style: TextStyle(
-                          color: Color(0xFF0F9F59),
+                          color: !_hasSessions
+                              ? AppColors.textMuted
+                              : ((_scoreVal ?? 0) >= 85
+                                  ? const Color(0xFF0F9F59)
+                                  : ((_scoreVal ?? 0) >= 70
+                                      ? const Color(0xFFC2410C)
+                                      : const Color(0xFFDC2626))),
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
                         ),
                       ),
                       const SizedBox(height: 6),
-                      const Text(
-                        'Aligned & Healthy',
-                        style: TextStyle(
+                      Text(
+                        _statusTitle,
+                        style: const TextStyle(
                           color: Color(0xFF0C2417),
                           fontWeight: FontWeight.w800,
                           fontSize: 22,
@@ -158,9 +238,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        "You've maintained excellent spinal posture for 85% of today's session.",
-                        style: TextStyle(
-                          color: const Color(0xFF436553),
+                        _statusDesc,
+                        style: const TextStyle(
+                          color: Color(0xFF436553),
                           fontSize: 13,
                           height: 1.4,
                         ),
@@ -169,16 +249,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  '😊',
-                  style: TextStyle(fontSize: 44),
+                Text(
+                  _emoji,
+                  style: const TextStyle(fontSize: 44),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 16),
 
-          // 3. Two Quick Stats Cards (4h 25m Session Duration & 8 Corrections)
+          // 3. Two Quick Stats Cards (Session Duration & Corrections)
           Row(
             children: [
               Expanded(
@@ -201,9 +281,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: const Icon(LucideIcons.clock, color: Color(0xFF0F9F59), size: 22),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        '4h 25m',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                      Text(
+                        _durationStr,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
                       ),
                       const SizedBox(height: 4),
                       const Text(
@@ -235,9 +315,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: const Icon(LucideIcons.sparkles, color: Color(0xFFF97316), size: 22),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        '8',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                      Text(
+                        '$_correctionsVal',
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
                       ),
                       const SizedBox(height: 4),
                       const Text(
@@ -295,11 +375,33 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Your shoulder balance improves by 12% when sitting with a lumbar support pillow. Keep it up!',
-                        style: TextStyle(
-                          color: const Color(0xFF475569),
+                        _aiInsight,
+                        style: const TextStyle(
+                          color: Color(0xFF475569),
                           fontSize: 13,
                           height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Recommended Stretch:',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _recommendedStretch,
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMain),
+                            ),
+                          ],
                         ),
                       ),
                     ],

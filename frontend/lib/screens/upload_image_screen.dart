@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
+import '../widgets/base_layout.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_button.dart';
 import 'processing_screen.dart';
@@ -137,17 +138,6 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
             const SizedBox(height: 24),
 
             // Upload Options (when no image selected)
-            if (_selectedImage == null) ...[
-              const Text(
-                'Upload Options',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textMain,
-              ),
-              const SizedBox(height: 24),
-
-              // Upload Options (when no image selected)
               if (_selectedImage == null) ...[
                 const Text(
                   'Upload Options',
@@ -354,9 +344,8 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
   Widget _buildSelectionCard({
     required String emoji,

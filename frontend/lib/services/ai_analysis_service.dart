@@ -135,6 +135,46 @@ class AiAnalysisService {
     return true;
   }
 
+  static Future<Map<String, dynamic>?> fetchDashboard(String userId) async {
+    try {
+      final url = '${ApiConstants.baseUrl}/dashboard/$userId';
+      final response = await ApiService.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      }
+    } catch (e, stackTrace) {
+      debugPrint('⚠️ Fetch dashboard exception: $e\n$stackTrace');
+    }
+    return null;
+  }
+
+  static Future<Map<String, dynamic>?> fetchStats({
+    String? userId,
+    String timeframe = 'this_week',
+    String? startDate,
+    String? endDate,
+  }) async {
+    try {
+      final targetUser = userId ?? 'user_demo_001';
+      String url = '${ApiConstants.baseUrl}/stats/$targetUser?timeframe=$timeframe';
+      if (startDate != null && startDate.isNotEmpty) {
+        url += '&start_date=$startDate';
+      }
+      if (endDate != null && endDate.isNotEmpty) {
+        url += '&end_date=$endDate';
+      }
+      final response = await ApiService.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['stats'];
+      }
+    } catch (e, stackTrace) {
+      debugPrint('⚠️ Fetch stats exception: $e\n$stackTrace');
+    }
+    return null;
+  }
+
 
   static AiReportModel _generateMockReport(String type) {
     return AiReportModel(

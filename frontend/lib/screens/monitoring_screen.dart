@@ -154,9 +154,8 @@ class _MonitoringScreenState extends State<MonitoringScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
+      );
+    }
 
   Widget _buildMetricCol(String label, String value, Color color) {
     return Column(

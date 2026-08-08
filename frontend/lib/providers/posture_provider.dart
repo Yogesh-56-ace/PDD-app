@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../constants/api_constants.dart';
+import '../services/api_service.dart';
 
 class PostureProvider extends ChangeNotifier {
   bool _isMonitoring = false;
@@ -47,9 +49,29 @@ class PostureProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void stopMonitoring() {
+  void stopMonitoring() async {
     _isMonitoring = false;
     _timer?.cancel();
+    
+    if (_timerSeconds > 0) {
+      final sessionDuration = _timerSeconds;
+      final sessionScore = _postureScore;
+      final sessionAlerts = _alertCount;
+
+      try {
+        final url = '${ApiConstants.baseUrl}/save-session';
+        await ApiService.post(url, {
+          'duration': sessionDuration,
+          'score': sessionScore,
+          'bad_posture_count': sessionAlerts,
+          'user_id': 'user_demo_001',
+          'problems_detected': sessionAlerts > 0 ? ['Forward Head / Slouching Detected ($sessionAlerts times)'] : []
+        });
+      } catch (e) {
+        debugPrint('⚠️ Save monitoring session error: $e');
+      }
+    }
+
     notifyListeners();
   }
 

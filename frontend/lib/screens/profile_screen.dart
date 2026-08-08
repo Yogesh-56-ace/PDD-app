@@ -11,6 +11,8 @@ import '../widgets/custom_button.dart';
 import 'auth_screen.dart';
 import 'settings_screen.dart';
 
+import '../services/ai_analysis_service.dart';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -22,11 +24,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final ImagePicker _picker = ImagePicker();
   String? _profileImagePath;
   bool _isUploading = false;
+  int _sessionsCount = 0;
+  int _avgScore = 0;
 
   @override
   void initState() {
     super.initState();
     _loadSavedAvatar();
+    _loadProfileStats();
+  }
+
+  Future<void> _loadProfileStats() async {
+    final stats = await AiAnalysisService.fetchStats(timeframe: 'all');
+    if (stats != null && mounted) {
+      setState(() {
+        _sessionsCount = stats['total_sessions'] ?? 0;
+        _avgScore = stats['avg_score'] ?? 0;
+      });
+    }
   }
 
   Future<void> _loadSavedAvatar() async {
@@ -202,8 +217,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStatBox('Sessions', '14', LucideIcons.video),
-                    _buildStatBox('Avg Score', '92%', LucideIcons.award),
+                    _buildStatBox('Sessions', '$_sessionsCount', LucideIcons.video),
+                    _buildStatBox('Avg Score', _avgScore > 0 ? '$_avgScore%' : 'No Data', LucideIcons.award),
                     _buildStatBox('Streak', '5 Days', LucideIcons.zap),
                   ],
                 ),

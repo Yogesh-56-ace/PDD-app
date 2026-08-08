@@ -25,13 +25,14 @@ class AIPostureEngine:
         except Exception:
             return 0.0
 
-    def analyze_pose(self, media_type="image", file_source=None, file_path=None, custom_data=None):
+    def analyze_pose(self, media_type="image", file_source=None, file_path=None, custom_data=None, user_id=None):
         """
         Executes Cloudinary Upload (posture-ai folder), MediaPipe 33 Landmark Pose Analysis & Gemini AI Engine.
         Stores returned Cloudinary secure_url into MongoDB Atlas posture_ai.reports.
         """
         report_id = f"rpt_{str(uuid.uuid4())[:8]}"
         created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        target_user_id = user_id or "user_demo_001"
 
         # 1. Real Cloudinary Image Upload to posture-ai folder
         cloudinary_url = None
@@ -141,7 +142,7 @@ class AIPostureEngine:
 
         report = {
             "id": report_id,
-            "user_id": "user_demo_001",
+            "user_id": target_user_id,
             "type": media_type,
             "date": created_at,
             "media_url": cloudinary_url,

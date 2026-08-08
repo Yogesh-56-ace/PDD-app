@@ -85,10 +85,25 @@ def upload_avatar():
         print(f"[AVATAR ERROR] Upload avatar failed: {e}")
         return jsonify({'message': f'Avatar upload failure: {str(e)}'}), 500
 
-@user_bp.route('/user/profile', methods=['PUT'])
+@user_bp.route('/user/profile', methods=['GET', 'PUT'])
 @token_required
-def update_profile():
-    """Updates user information including name, age, gender, and profile avatar in posture_ai.users."""
+def profile_handler():
+    """Retrieves or updates user information including name, age, gender, and profile avatar in posture_ai.users."""
+    if request.method == 'GET':
+        try:
+            user_doc = db.users.find_one({'_id': g.user_id}) or db.users.find_one({'user_id': g.user_id}) or {}
+            return jsonify({
+                'user_id': g.user_id,
+                'name': user_doc.get('name'),
+                'email': user_doc.get('email'),
+                'age': user_doc.get('age'),
+                'gender': user_doc.get('gender'),
+                'profile_image': user_doc.get('profile_image'),
+                'onboarding_completed': user_doc.get('onboarding_completed', False)
+            }), 200
+        except Exception as e:
+            return jsonify({'message': f'Profile lookup failure: {str(e)}'}), 500
+
     data = request.get_json() or {}
     
     try:

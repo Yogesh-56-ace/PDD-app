@@ -5,6 +5,14 @@ from middleware.auth_middleware import token_required
 
 settings_bp = Blueprint('settings', __name__)
 
+@settings_bp.route('/settings', methods=['GET', 'PUT'])
+@token_required
+def current_user_settings():
+    if request.method == 'GET':
+        return get_settings(g.user_id)
+    else:
+        return update_settings(g.user_id)
+
 @settings_bp.route('/settings/<user_id>', methods=['GET'])
 @token_required
 def get_settings(user_id):

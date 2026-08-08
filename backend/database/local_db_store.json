@@ -1,0 +1,268 @@
+{
+  "users": [
+    {
+      "_id": "534f4183-c21a-418e-a56d-b813a2f18689",
+      "user_id": "534f4183-c21a-418e-a56d-b813a2f18689",
+      "name": "Test User",
+      "email": "test@example.com",
+      "password_hash": "$2b$12$ocsNFUpnbqOpUN6yDpTLq.F/am1ftdZtON9ZTk1ZpiKBYA.WzWI16",
+      "age": null,
+      "gender": null,
+      "profile_image": null,
+      "onboarding_completed": false
+    },
+    {
+      "_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "name": "arun",
+      "email": "arun@gmail.com",
+      "password_hash": "$2b$12$EzwEqhMqPtUjfpeLtpHxN.KnbU/epKP0ssa/ApyWCjo5R9neBMv42",
+      "age": 22,
+      "gender": "Male",
+      "profile_image": null,
+      "onboarding_completed": false
+    }
+  ],
+  "settings": [
+    {
+      "user_id": "534f4183-c21a-418e-a56d-b813a2f18689",
+      "audio_alert": true,
+      "sensitivity": "medium",
+      "reminder_interval": 15,
+      "_id": "534f4183-c21a-418e-a56d-b813a2f18689"
+    },
+    {
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "audio_alert": true,
+      "sensitivity": "medium",
+      "reminder_interval": 15,
+      "_id": "4c64d828-780e-4e30-a8ba-7da949df0daa"
+    }
+  ],
+  "reports": [
+    {
+      "session_id": "rpt_ac46a9f3",
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "date": "2026-07-30 09:33:28",
+      "duration": 10,
+      "duration_str": "00:10",
+      "score": 87,
+      "good_posture_pct": 87,
+      "bad_posture_pct": 13,
+      "bad_posture_count": 0,
+      "average_neck_angle": 0.0,
+      "status": "Good",
+      "_id": "rpt_ac46a9f3",
+      "id": "rpt_ac46a9f3",
+      "problems_detected": [
+        "Optimal alignment - Minor postural fatigue on static hold"
+      ]
+    },
+    {
+      "session_id": "rpt_b7342510",
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "date": "2026-07-30 09:35:10",
+      "duration": 10,
+      "duration_str": "00:10",
+      "score": 82,
+      "good_posture_pct": 82,
+      "bad_posture_pct": 18,
+      "bad_posture_count": 0,
+      "average_neck_angle": 0.0,
+      "status": "Good",
+      "_id": "rpt_b7342510",
+      "id": "rpt_b7342510",
+      "problems_detected": [
+        "Uneven Shoulder Height (Scapular Imbalance)",
+        "Anterior Pelvic Tilt"
+      ]
+    },
+    {
+      "session_id": "rpt_374061bf",
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "date": "2026-07-30 09:50:47",
+      "duration": 10,
+      "duration_str": "00:10",
+      "score": 81,
+      "good_posture_pct": 81,
+      "bad_posture_pct": 19,
+      "bad_posture_count": 0,
+      "average_neck_angle": 0.0,
+      "status": "Good",
+      "_id": "rpt_374061bf",
+      "id": "rpt_374061bf",
+      "problems_detected": [
+        "Forward Head Posture (Cervical Spine Compression)"
+      ]
+    },
+    {
+      "session_id": "rpt_c0b4bf97",
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "date": "2026-07-30 09:58:17",
+      "duration": 10,
+      "duration_str": "00:10",
+      "score": 81,
+      "good_posture_pct": 81,
+      "bad_posture_pct": 19,
+      "bad_posture_count": 0,
+      "average_neck_angle": 0.0,
+      "status": "Good",
+      "_id": "rpt_c0b4bf97",
+      "id": "rpt_c0b4bf97",
+      "problems_detected": [
+        "Forward Head Posture (Cervical Spine Compression)",
+        "Uneven Shoulder Height (Scapular Imbalance)"
+      ]
+    },
+    {
+      "session_id": "rpt_23937205",
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "date": "2026-07-30 10:48:32",
+      "duration": 10,
+      "duration_str": "00:10",
+      "score": 86,
+      "good_posture_pct": 86,
+      "bad_posture_pct": 14,
+      "bad_posture_count": 0,
+      "average_neck_angle": 0.0,
+      "status": "Good",
+      "_id": "rpt_23937205",
+      "id": "rpt_23937205",
+      "problems_detected": [
+        "Uneven Shoulder Height (Scapular Imbalance)"
+      ]
+    },
+    {
+      "session_id": "rpt_dd2dc676",
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "date": "2026-07-30 10:59:14",
+      "duration": 10,
+      "duration_str": "00:10",
+      "score": 80,
+      "good_posture_pct": 80,
+      "bad_posture_pct": 20,
+      "bad_posture_count": 0,
+      "average_neck_angle": 0.0,
+      "status": "Good",
+      "_id": "rpt_dd2dc676",
+      "id": "rpt_dd2dc676",
+      "problems_detected": [
+        "Forward Head Posture (Cervical Spine Compression)",
+        "Uneven Shoulder Height (Scapular Imbalance)"
+      ]
+    }
+  ],
+  "history": [
+    {
+      "session_id": "rpt_ac46a9f3",
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "date": "2026-07-30 09:33:28",
+      "duration": 10,
+      "duration_str": "00:10",
+      "score": 87,
+      "good_posture_pct": 87,
+      "bad_posture_pct": 13,
+      "bad_posture_count": 0,
+      "average_neck_angle": 0.0,
+      "status": "Good",
+      "_id": "rpt_ac46a9f3",
+      "id": "rpt_ac46a9f3",
+      "problems_detected": [
+        "Optimal alignment - Minor postural fatigue on static hold"
+      ]
+    },
+    {
+      "session_id": "rpt_b7342510",
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "date": "2026-07-30 09:35:10",
+      "duration": 10,
+      "duration_str": "00:10",
+      "score": 82,
+      "good_posture_pct": 82,
+      "bad_posture_pct": 18,
+      "bad_posture_count": 0,
+      "average_neck_angle": 0.0,
+      "status": "Good",
+      "_id": "rpt_b7342510",
+      "id": "rpt_b7342510",
+      "problems_detected": [
+        "Uneven Shoulder Height (Scapular Imbalance)",
+        "Anterior Pelvic Tilt"
+      ]
+    },
+    {
+      "session_id": "rpt_374061bf",
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "date": "2026-07-30 09:50:47",
+      "duration": 10,
+      "duration_str": "00:10",
+      "score": 81,
+      "good_posture_pct": 81,
+      "bad_posture_pct": 19,
+      "bad_posture_count": 0,
+      "average_neck_angle": 0.0,
+      "status": "Good",
+      "_id": "rpt_374061bf",
+      "id": "rpt_374061bf",
+      "problems_detected": [
+        "Forward Head Posture (Cervical Spine Compression)"
+      ]
+    },
+    {
+      "session_id": "rpt_c0b4bf97",
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "date": "2026-07-30 09:58:17",
+      "duration": 10,
+      "duration_str": "00:10",
+      "score": 81,
+      "good_posture_pct": 81,
+      "bad_posture_pct": 19,
+      "bad_posture_count": 0,
+      "average_neck_angle": 0.0,
+      "status": "Good",
+      "_id": "rpt_c0b4bf97",
+      "id": "rpt_c0b4bf97",
+      "problems_detected": [
+        "Forward Head Posture (Cervical Spine Compression)",
+        "Uneven Shoulder Height (Scapular Imbalance)"
+      ]
+    },
+    {
+      "session_id": "rpt_23937205",
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "date": "2026-07-30 10:48:32",
+      "duration": 10,
+      "duration_str": "00:10",
+      "score": 86,
+      "good_posture_pct": 86,
+      "bad_posture_pct": 14,
+      "bad_posture_count": 0,
+      "average_neck_angle": 0.0,
+      "status": "Good",
+      "_id": "rpt_23937205",
+      "id": "rpt_23937205",
+      "problems_detected": [
+        "Uneven Shoulder Height (Scapular Imbalance)"
+      ]
+    },
+    {
+      "session_id": "rpt_dd2dc676",
+      "user_id": "4c64d828-780e-4e30-a8ba-7da949df0daa",
+      "date": "2026-07-30 10:59:14",
+      "duration": 10,
+      "duration_str": "00:10",
+      "score": 80,
+      "good_posture_pct": 80,
+      "bad_posture_pct": 20,
+      "bad_posture_count": 0,
+      "average_neck_angle": 0.0,
+      "status": "Good",
+      "_id": "rpt_dd2dc676",
+      "id": "rpt_dd2dc676",
+      "problems_detected": [
+        "Forward Head Posture (Cervical Spine Compression)",
+        "Uneven Shoulder Height (Scapular Imbalance)"
+      ]
+    }
+  ]
+}
